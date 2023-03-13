@@ -24,3 +24,22 @@ make: *** [Makefile:130：all] 错误 2
 ---
 
 https://blog.csdn.net/lzRush/article/details/84579692
+
+---
+
+如果你是以CMakeList来管理项目，那么解决方法（以我的错误为例）如下：
+
+1.打开CMakeList.txt
+
+2.在CMakeList.txt中添加
+
+//我缺少的是libopencv_imgproc.so.2.4这个链接库，我们只需要在CMakeList中定向链接这个库即可
+
+set(LIB_OPENCV_IMGPROC_DIR /usr/local/lib)   //LIB_OPENCV_IMGPROC_DIR是变量名，可以随意写
+add_library(libopencv_imgproc SHARED IMPORTED)
+set_target_properties(libopencv_imgproc PROPERTIES IMPORTED_LOCATION ${LIB_OPENCV_IMGPROC_DIR}/libopencv_imgproc.so.2.4.9)
+
+target_link_libraries(demo  libopencv_imgproc )//注意这条语句要放在add_executable的后面
+————————————————
+版权声明：本文为CSDN博主「御名方守矢-」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/lzRush/article/details/84579692
