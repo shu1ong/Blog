@@ -65,3 +65,13 @@ Segmentation fault (core dumped)
 ---
 
 问题是由 Eigen 引起的。使用版本 3.2.10 而不是 3.3.X。
+
+---
+
+#define EIGEN_WORLD_VERSION 3
+#define EIGEN_MAJOR_VERSION 3
+#define EIGEN_MINOR_VERSION 7
+
+---
+
+我的版本是用的3.3.7的
