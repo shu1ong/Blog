@@ -43,3 +43,10 @@ target_link_libraries(demo  libopencv_imgproc )//注意这条语句要放在add_
 ————————————————
 版权声明：本文为CSDN博主「御名方守矢-」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
 原文链接：https://blog.csdn.net/lzRush/article/details/84579692
+
+---
+
+这个办法其实没有解决 最后解决的办法是修改了opencv的版本
+参照
+https://www.yuque.com/xtdrone/manual_cn/vslam
+由于Noetic自带的OpenCV版本是4.2.0，在编译时需要先修改CMakeList.txt
