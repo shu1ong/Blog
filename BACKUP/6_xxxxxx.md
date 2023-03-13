@@ -50,3 +50,18 @@ target_link_libraries(demo  libopencv_imgproc )//注意这条语句要放在add_
 参照
 https://www.yuque.com/xtdrone/manual_cn/vslam
 由于Noetic自带的OpenCV版本是4.2.0，在编译时需要先修改CMakeList.txt
+
+---
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Stereo
+Segmentation fault (core dumped)
+
+
+---
+
+问题是由 Eigen 引起的。使用版本 3.2.10 而不是 3.3.X。
