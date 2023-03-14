@@ -38,3 +38,8 @@ CMake Error at /usr/share/dart/cmake/DARTFindEigen3.cmake:12 (find_package):
 
 ![image](https://user-images.githubusercontent.com/127008177/224895429-9102bca5-d11e-41c0-a551-82585d1b9dab.png)
 ceres又不行了，重新编译安装试试
+
+---
+
+成功解决以及新的问题：
+![image](https://user-images.githubusercontent.com/127008177/224897678-a28b43e8-5fac-4ad4-ad4d-d87ad445f8e1.png)
