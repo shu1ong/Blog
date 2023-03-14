@@ -43,3 +43,9 @@ ceres又不行了，重新编译安装试试
 
 成功解决以及新的问题：
 ![image](https://user-images.githubusercontent.com/127008177/224897678-a28b43e8-5fac-4ad4-ad4d-d87ad445f8e1.png)
+
+
+---
+
+本着缺什么补什么的精神
+sudo apt-get install ros-noetic-cmake-modules
