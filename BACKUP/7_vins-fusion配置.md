@@ -49,3 +49,8 @@ ceres又不行了，重新编译安装试试
 
 本着缺什么补什么的精神
 sudo apt-get install ros-noetic-cmake-modules
+
+---
+
+![image](https://user-images.githubusercontent.com/127008177/224903007-2ac48d3a-fa3e-44ec-8a61-76c5b5bed62e.png)
+可以成功编译到84%
