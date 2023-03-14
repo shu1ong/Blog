@@ -59,3 +59,10 @@ sudo apt-get install ros-noetic-cmake-modules
 
 第一次报错的地方在这
 ![image](https://user-images.githubusercontent.com/127008177/224903863-b30f329e-3385-4e6c-8146-8453abd23325.png)
+
+
+---
+
+这个问题为我有印象，在orb-slam2 中的配置里有提到过如何解决。
+![image](https://user-images.githubusercontent.com/127008177/224904045-85ee2548-78e4-4c1c-8230-f96dc1b2fcdd.png)
+https://www.yuque.com/xtdrone/manual_cn/vslam
