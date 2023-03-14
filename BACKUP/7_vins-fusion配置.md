@@ -28,3 +28,8 @@ CMake Error at /usr/share/dart/cmake/DARTFindEigen3.cmake:12 (find_package):
 ![image](https://user-images.githubusercontent.com/127008177/224891038-e235f7e2-3a14-4f5a-84b7-c20bc74e42ff.png)
 能够检验到包
 考虑要不要改回去
+
+---
+
+![image](https://user-images.githubusercontent.com/127008177/224891603-83593070-25b0-47b3-850e-b4db10c111a1.png)
+已经可以熟练的卸载重新安装了
