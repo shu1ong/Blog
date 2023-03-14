@@ -80,4 +80,7 @@ https://blog.csdn.net/qq_45945548/article/details/124754325
 
 本着后面还有一堆报错 我觉得改opencv库的方式会好用一点
 先看看目前自己用的啥库
-``
+```
+pkg-config opencv --modversion
+```
+3.4.16
