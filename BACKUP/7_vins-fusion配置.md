@@ -87,3 +87,10 @@ pkg-config opencv --modversion
 关于opencv的多版本安装和切换的问题
 [切换版本](https://www.cnblogs.com/dylancao/p/9493061.html)
 [多版本安装](https://blog.csdn.net/learning_tortosie/article/details/80594399)
+
+---
+
+emmm
+好像不需要重装了？
+https://blog.csdn.net/qq_40904854/article/details/124634997
+![image](https://user-images.githubusercontent.com/127008177/224909463-302bc459-5c79-4642-8ce5-38e4919de453.png)
