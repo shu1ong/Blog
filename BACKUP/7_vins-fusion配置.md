@@ -74,3 +74,10 @@ https://www.yuque.com/xtdrone/manual_cn/vslam
 参照
 https://blog.csdn.net/qq_45945548/article/details/124754325
 ![image](https://user-images.githubusercontent.com/127008177/224906215-727bb0e9-d573-4c87-9c4a-922a2f24125f.png)
+
+
+---
+
+本着后面还有一堆报错 我觉得改opencv库的方式会好用一点
+先看看目前自己用的啥库
+``
