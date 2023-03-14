@@ -86,3 +86,4 @@ pkg-config opencv --modversion
 3.4.16
 关于opencv的多版本安装和切换的问题
 [切换版本](https://www.cnblogs.com/dylancao/p/9493061.html)
+[多版本安装](https://blog.csdn.net/learning_tortosie/article/details/80594399)
