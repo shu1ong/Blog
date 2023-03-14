@@ -9,3 +9,16 @@ glog
 https://zhuanlan.zhihu.com/p/459061947
 ceres 1.14.0
 https://zhuanlan.zhihu.com/p/460685629
+
+---
+
+靠 昨天装orb-slam2该了eigen3的版本 现在报错找不到包了
+
+---
+
+CMake Error at /usr/share/dart/cmake/DARTFindEigen3.cmake:12 (find_package):
+  Could not find a package configuration file provided by "Eigen3" with any
+  of the following names:
+
+    Eigen3Config.cmake
+    eigen3-config.cmake
