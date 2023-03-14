@@ -94,3 +94,32 @@ emmm
 好像不需要重装了？
 https://blog.csdn.net/qq_40904854/article/details/124634997
 ![image](https://user-images.githubusercontent.com/127008177/224909463-302bc459-5c79-4642-8ce5-38e4919de453.png)
+
+
+---
+
+```shell
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/keyframe.cpp: In member function ‘bool KeyFrame::findConnection(KeyFrame*)’:
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/keyframe.cpp:455:130: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  455 |              putText(notation, "current frame: " + to_string(index) + "  sequence: " + to_string(sequence), cv::Point2f(20, 30), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255), 3);
+      |                                                                                                                                  ^~~~~~~~~~~~~~~~~~~~~~~
+[ 92%] Linking CXX shared library /home/jsl/catkin_ws/devel/lib/libgazebo_ros_openni_kinect.so
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp: In member function ‘int PoseGraph::detectLoop(KeyFrame*, int)’:
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:343:97: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  343 |         putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+      |                                                                                                 ^~~~~~~~~~~~~~~~~~~~~~~
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:364:101: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  364 |             putText(loop_result, "neighbour score:" + to_string(ret[0].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
+      |                                                                                                     ^~~~~~~~~~~~~~~~~~~~~~~
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:374:130: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  374 |             putText(tmp_image, "index:  " + to_string(tmp_index) + "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255));
+      |                                                                                                                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:391:102: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  391 |                     putText(tmp_image, "loop score:" + to_string(ret[i].Score), cv::Point2f(10, 50), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+      |                                                                                                      ^~~~~~~~~~~~~~~~~~~~~~~
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:409:47: warning: comparison of integer expressions of different signedness: ‘DBoW2::EntryId’ {aka ‘unsigned int’} and ‘int’ [-Wsign-compare]
+  409 |             if (min_index == -1 || (ret[i].Id < min_index && ret[i].Score > 0.015))
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp: In member function ‘void PoseGraph::addKeyFrameIntoVoc(KeyFrame*)’:
+/home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:427:97: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
+  427 |         putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
+```
