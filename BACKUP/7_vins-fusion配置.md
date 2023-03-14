@@ -22,3 +22,9 @@ CMake Error at /usr/share/dart/cmake/DARTFindEigen3.cmake:12 (find_package):
 
     Eigen3Config.cmake
     eigen3-config.cmake
+
+---
+
+![image](https://user-images.githubusercontent.com/127008177/224891038-e235f7e2-3a14-4f5a-84b7-c20bc74e42ff.png)
+能够检验到包
+考虑要不要改回去
