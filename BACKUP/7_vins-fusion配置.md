@@ -54,3 +54,8 @@ sudo apt-get install ros-noetic-cmake-modules
 
 ![image](https://user-images.githubusercontent.com/127008177/224903007-2ac48d3a-fa3e-44ec-8a61-76c5b5bed62e.png)
 可以成功编译到84%
+
+---
+
+第一次报错的地方在这
+![image](https://user-images.githubusercontent.com/127008177/224903863-b30f329e-3385-4e6c-8146-8453abd23325.png)
