@@ -66,3 +66,11 @@ sudo apt-get install ros-noetic-cmake-modules
 这个问题为我有印象，在orb-slam2 中的配置里有提到过如何解决。
 ![image](https://user-images.githubusercontent.com/127008177/224904045-85ee2548-78e4-4c1c-8230-f96dc1b2fcdd.png)
 https://www.yuque.com/xtdrone/manual_cn/vslam
+
+---
+
+加上代码还是同样的报错
+冲浪回来说是opencv2到后续版本的更新一些写法调用上出现了不兼容的情况：
+参照
+https://blog.csdn.net/qq_45945548/article/details/124754325
+![image](https://user-images.githubusercontent.com/127008177/224906215-727bb0e9-d573-4c87-9c4a-922a2f24125f.png)
