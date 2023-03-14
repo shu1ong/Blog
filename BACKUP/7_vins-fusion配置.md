@@ -123,3 +123,8 @@ https://blog.csdn.net/qq_40904854/article/details/124634997
 /home/jsl/catkin_ws/src/VINS-Fusion/loop_fusion/src/pose_graph.cpp:427:97: error: ‘CV_FONT_HERSHEY_SIMPLEX’ was not declared in this scope
   427 |         putText(compressed_image, "feature_num:" + to_string(feature_num), cv::Point2f(10, 10), CV_FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255));
 ```
+
+---
+
+大跌写的教程
+https://zhuanlan.zhihu.com/p/432167383
