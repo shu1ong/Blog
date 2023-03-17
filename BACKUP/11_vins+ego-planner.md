@@ -24,8 +24,8 @@ python multirotor_communication.py iris 0
 cd ~/XTDrone/control/keyboard
 python multirotor_keyboard_control.py iris 1 vel
 ```
+
 ego-planner 启动
-```
 转换坐标
 ```
 cd ~/XTDrone/motion_planning/3d
