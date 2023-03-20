@@ -6,7 +6,7 @@ My personal blog using issues and GitHub Actions (随意转载，无需署名)
  | ---- | ---- | ---- |
 ## 最近更新
 - [vins+ego-planner](https://github.com/shu1ong/gitblog/issues/11)--2023-03-17
-- [如何熟练的重装系统](https://github.com/shu1ong/gitblog/issues/10)--2023-03-16
+- [Ubuntu](https://github.com/shu1ong/gitblog/issues/10)--2023-03-16
 - [vins-fusion 运行](https://github.com/shu1ong/gitblog/issues/8)--2023-03-14
 - [vins-fusion配置](https://github.com/shu1ong/gitblog/issues/7)--2023-03-14
 - [使用expect在Linux中实现自动命令行](https://github.com/shu1ong/gitblog/issues/5)--2023-03-12
