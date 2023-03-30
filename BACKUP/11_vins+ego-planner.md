@@ -48,3 +48,10 @@ roslaunch ego_planner single_uav.launch
 ---
 
 起飞后切hover会有点奇怪，会有一个抬头的动作，不知道是不是加速度设置过大的原因
+
+---
+
+```
+killall gzserver
+killall gzclient
+```
