@@ -64,3 +64,7 @@ killall gzclient
 ---
 
 记得在launch文件中修改飞机的相机模型，把特征相机（stereo）改成深度（realsence）相机，和相机发布的话题有关，也与ego-planner接受的数据有关
+
+---
+
+目标点的坐标是基于机体系而言的，不是全局坐标系
