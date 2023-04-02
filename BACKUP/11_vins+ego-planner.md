@@ -72,3 +72,7 @@ killall gzclient
 ---
 
 https://blog.csdn.net/qq_39779233/article/details/119720235
+
+---
+
+允许最大的加速度调大的话更容易过
