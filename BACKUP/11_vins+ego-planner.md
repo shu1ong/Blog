@@ -40,7 +40,7 @@ rviz -d ego_rviz.rviz
 
 启动ego_planner
 ```
-cd ~/XTDrone/motion_planning/3d
+cd ~/catkin_ws/src
 roslaunch ego_planner single_uav.launch
 ```
 
