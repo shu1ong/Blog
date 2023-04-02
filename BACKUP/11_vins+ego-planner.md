@@ -55,3 +55,7 @@ roslaunch ego_planner single_uav.launch
 killall gzserver
 killall gzclient
 ```
+
+---
+
+墙面的识别需要复杂的纹理支持
