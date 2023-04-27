@@ -4,3 +4,11 @@
 ```
 chmod +x -Rv `find . -name "*.sh"`
 ```
+提交超算指令
+```
+sbatch  sub.sh
+```
+查看作业队列
+```
+squeue
+```
