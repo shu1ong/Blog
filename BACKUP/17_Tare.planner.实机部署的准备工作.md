@@ -11,5 +11,5 @@
 /registered_scan [sensor_msgs/PointCloud2]
 /explored_areas [sensor_msgs/PointCloud2] 
 ```
-其中terrain相关的话题，主要处理激光点云的拼接（不同帧）和分割（根据车的距离的远近）
-`/state_estimation_at_scan`
+其中`/terrain`相关的两个话题，主要处理激光点云的拼接（不同帧）和分割（根据车的距离的远近）【师兄说的】
+`/state_estimation_at_scan`主要是激光和omotry的融合后的话题
