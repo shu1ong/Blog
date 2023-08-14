@@ -19,3 +19,4 @@
 - [ ] 小车的大小
 - [ ] 激光的cropped（因为和zhang的车车激光高度不一样0.75m，可能需要调整）?
 > The default sensor height is set at 0.75m above the ground in the vehicle simulator and the registered scans are cropped at the height of -0.5m and 0.25m w.r.t. the sensor.
+> checked: 0.25m is an absolute value
