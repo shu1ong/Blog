@@ -291,13 +291,19 @@ if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / 
 又有`dirToVehicle = false`，所以必须有`angDiff > dirThre == false`
 取其补集则有：`angDiff <= dirThre`此时angDiff所得出的方向均为背离目标点的方向。
 
-``
 ```c
               if ((angDiff > dirThre && !dirToVehicle) || (fabs(10.0 * rotDir - 180.0) > dirThre && fabs(joyDir) <= 90.0 && dirToVehicle) ||
                   ((10.0 * rotDir > dirThre && 360.0 - 10.0 * rotDir > dirThre) && fabs(joyDir) > 90.0 && dirToVehicle)) {
                 continue;
               }
 ```
+把这些方向上的点逆变换回车体坐标系下，（纯逆旋转）
+用x2的值可以求出scaleY,其作用是用来求解indY: 
+
+`scaleY =  y / (offsetY - voxelSize * indY)`
+
+因为体素网格不是沿x轴进行均匀分布的。但每一个indX所对应的网格数量是相同的。
+
 
 ```c
               //return to galobal coodiantion to calculate the scaleY
@@ -309,9 +315,19 @@ if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / 
 
               int indX = int((gridVoxelOffsetX + gridVoxelSize / 2 - x2) / gridVoxelSize);
               int indY = int((gridVoxelOffsetY + gridVoxelSize / 2 - y2 / scaleY) / gridVoxelSize);
+```
+检验体素网格是否在路径范围内，如果在的话，遍历当前体素网格附近所有的路径，并将相关标签记录杂clearPathList中。（被遮挡了一次）
 
+这里有对障碍点的高度判断，需要大于障碍物高度阈值的点才会被识别为障碍物。（terrain analysis）
+
+而如果该点在terrain analysis判断后依旧能够通过，则将它的高度值加入到`PathPenaltyList`中，为后续评分提供依据。（可以经过但不会优先选择的点）
+
+```c
               if (indX >= 0 && indX < gridVoxelNumX && indY >= 0 && indY < gridVoxelNumY) {
                 int ind = gridVoxelNumY * indX + indY;
+                //每一列的体素网格数是一个定值
+
+
                 int blockedPathByVoxelNum = correspondences[ind].size();
                 for (int j = 0; j < blockedPathByVoxelNum; j++) {
                   if (h > obstacleHeightThre || !useTerrainAnalysis) {
