@@ -1,5 +1,6 @@
 # [LocalPlanner code analyze](https://github.com/shu1ong/gitblog/issues/19)
 
+# inti
 ### 直接进主函数，节点的初始化
 
 ```c++
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
   ros::Publisher pubPath = nh.advertise<nav_msgs::Path> ("/path", 5);
   nav_msgs::Path path;
 ```
-## path文件的读取
+### path文件的读取
 ```c++
 printf ("\nReading path files.\n");
 
@@ -78,7 +79,14 @@ printf ("\nReading path files.\n");
   #endif
   readPathList();
 ```
-对于激光点云数据进行处理：如果是一帧的激光数据则与之前的激光数据进行叠加，而如果是terrainmap（已经处理好的数据？）则直接对plannerCloud进行更新
+这里path的读取一共有三个函数，分别读取了`startPaths.ply``Paths.ply``Pathlist.ply`三个文件。
+这三个文件都是由文件`path_generation.m`生成。一起保存在`../path`路径下。
+文件中保存了path的前向路径生成和体素网格邻近表，用作碰撞检测和路径筛选。可以查阅另一篇博客进行参考（todo）。
+# main
+之前的内容都属于初始化的内容，loop从这里开始
+
+### 对于激光点云数据进行处理
+如果是一帧的激光数据则与之前的激光数据进行叠加，而如果是terrainmap（已经处理好的数据？）则直接对plannerCloud进行更新
 ```c++
     if (newLaserCloud || newTerrainCloud) {
       if (newLaserCloud) {
