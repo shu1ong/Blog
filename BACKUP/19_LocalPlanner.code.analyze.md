@@ -250,3 +250,59 @@ ps`这些数组的构成类似： arr[ang1[pathNumber] ang2[pathNumber] ang3[pat
         float angOffset = atan2(vehicleWidth, vehicleLength) * 180.0 / PI;
 
 ```
+接着进入核心函数
+首先计算了每个点到车的距离，使用了`PathScale`对距离进行缩放。但实际上这里`pathScale = 1`。。。
+
+第一个if判断了如下的条件：
+1. 确定了是在近点（<adjecentRange = pathRange）
+2. 排除了距离gaolPoint目标点太远的点
+
+
+
+
+```c
+int plannerCloudCropSize = plannerCloudCrop->points.size();
+        //this loop use to filter the planner cloud
+        for (int i = 0; i < plannerCloudCropSize; i++) {
+          float x = plannerCloudCrop->points[i].x / pathScale; 
+          float y = plannerCloudCrop->points[i].y / pathScale; 
+          float h = plannerCloudCrop->points[i].intensity;
+          float dis = sqrt(x * x + y * y);
+
+if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / pathScale || !pathCropByGoal) && checkObstacle) {
+            for (int rotDir = 0; rotDir < 36; rotDir++) {
+              float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
+              float angDiff = fabs(joyDir - (10.0 * rotDir - 180.0));
+              if (angDiff > 180.0) {
+                angDiff = 360.0 - angDiff;
+              }//取劣弧
+              if ((angDiff > dirThre && !dirToVehicle) || (fabs(10.0 * rotDir - 180.0) > dirThre && fabs(joyDir) <= 90.0 && dirToVehicle) ||
+                  ((10.0 * rotDir > dirThre && 360.0 - 10.0 * rotDir > dirThre) && fabs(joyDir) > 90.0 && dirToVehicle)) {
+                continue;
+              }
+              //return to galobal coodiantion to calculate the scaleY
+              float x2 = cos(rotAng) * x + sin(rotAng) * y;
+              float y2 = -sin(rotAng) * x + cos(rotAng) * y;
+              //`scaleY  = y/offsetY
+              float scaleY = x2 / gridVoxelOffsetX + searchRadius / gridVoxelOffsetY 
+                             * (gridVoxelOffsetX - x2) / gridVoxelOffsetX;
+
+              int indX = int((gridVoxelOffsetX + gridVoxelSize / 2 - x2) / gridVoxelSize);
+              int indY = int((gridVoxelOffsetY + gridVoxelSize / 2 - y2 / scaleY) / gridVoxelSize);
+
+              if (indX >= 0 && indX < gridVoxelNumX && indY >= 0 && indY < gridVoxelNumY) {
+                int ind = gridVoxelNumY * indX + indY;
+                int blockedPathByVoxelNum = correspondences[ind].size();
+                for (int j = 0; j < blockedPathByVoxelNum; j++) {
+                  if (h > obstacleHeightThre || !useTerrainAnalysis) {
+                    clearPathList[pathNum * rotDir + correspondences[ind][j]]++;
+                  } else {
+                    if (pathPenaltyList[pathNum * rotDir + correspondences[ind][j]] < h && h > groundHeightThre) {
+                      pathPenaltyList[pathNum * rotDir + correspondences[ind][j]] = h;
+                    }
+                  }
+                }
+              }
+            }
+          }
+```
