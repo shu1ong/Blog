@@ -43,6 +43,7 @@ int main(int argc, char** argv)
   ros::Publisher pubPath = nh.advertise<nav_msgs::Path> ("/path", 5);
   nav_msgs::Path path;
 ```
+### path文件的读取
 ```c++
 printf ("\nReading path files.\n");
 
