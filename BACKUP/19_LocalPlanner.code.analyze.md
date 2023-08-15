@@ -183,6 +183,23 @@ pcl::PointXYZI point;
       }
 ```
 开始主循环之前，进行了一些前置的初始处理：
+这些数据在后续处理中都会有比较重要的作用。
+1. `pathScale`主要用于对于路径基于巡航速度的缩放，`pahtRange`还不清楚。
+2. 将目标点转换到车体坐标下，进行了一个相对位置和方向的计算。
+3. 限制了最大转角，在非双向行驶模式下。（能不能倒车）
+4. 一共初始化了三个数组
+   1. `clearPathList` ：记录筛选信息的flag，每个遮挡点++
+   2. `pathPenaltyList` ：
+   3. `clearPathPerGroupScore` ： 记录每个group的得分
+
+ps`这些数组的构成类似： arr[ang1[pathNumber] ang2[pathNumber] ang3[pathNumber] ...]`
+一共36个ang对应360度，然后以10度划分一组。
+
+5. 小车的几何信息录入在 `vehicleLength`和 `vehicleWidth`中，daimeter主要是用于小车原地转圈掉头用的（oneway的情况下）
+但也需要在path_generation.m中对小车的size进行更改。主要修改的参数：将serchRadius的值与diameter值相等即可。
+
+
+
 ```c
     //define pathRange
    float pathRange = adjacentRange;
@@ -216,5 +233,20 @@ pcl::PointXYZI point;
        else if (joyDir < -90.0) joyDir = -90.0;
      }
    }
+
+    //初始化三个数组
+   for (int i = 0; i < 36 * pathNum; i++) {
+          clearPathLiclearPathListst[i] = 0;
+          pathPenaltyList[i] = 0;
+        }
+        for (int i = 0; i < 36 * groupNum; i++) {
+          clearPathPerGroupScore[i] = 0;
+        }
+
+        float minObsAngCW = -180.0;
+        float minObsAngCCW = 180.0;
+        
+        float diameter = sqrt(vehicleLength / 2.0 * vehicleLength / 2.0 + vehicleWidth / 2.0 * vehicleWidth / 2.0);
+        float angOffset = atan2(vehicleWidth, vehicleLength) * 180.0 / PI;
 
 ```
