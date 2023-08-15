@@ -353,10 +353,13 @@ if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || 
             //conditoin 2: fabs(x) > vehicleLength / pathScale / 2.0 || fabs(y) > vehicleWidth / pathScale / 2.0          ----->but the point cant be in the vehicle
             //condition 3: h > obstacleHeightThre || !useTerrainAnalysis                                                  ------>meanwile it should satify the hight check
             //conditino 4: checkRotObstacle                                                                               ----->mode configuration
+```
+在逆时针方向 这里的Obs应该是observasion的意思正好满足观察到小车的最小旋转角度
 
+而这里的`minObsAngCCW`和`minObsAngCW` 应该是正好互补的(180)
+```c
             float angObs = atan2(y, x) * 180.0 / PI;
             if (angObs > 0) {
-              //在逆时针方向 这里的Obs应该是observasion的意思正好满足观察到小车的最小旋转角度
               if (minObsAngCCW > angObs - angOffset) minObsAngCCW = angObs - angOffset;
               if (minObsAngCW < angObs + angOffset - 180.0) minObsAngCW = angObs + angOffset - 180.0;
             } else {
@@ -369,4 +372,38 @@ if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || 
 ```
 
 
+```c
+for (int i = 0; i < 36 * pathNum; i++) {
+          int rotDir = int(i / pathNum);
+          float angDiff = fabs(joyDir - (10.0 * rotDir - 180.0));
+          if (angDiff > 180.0) {
+            angDiff = 360.0 - angDiff;
+          }
+          if ((angDiff > dirThre && !dirToVehicle) || (fabs(10.0 * rotDir - 180.0) > dirThre && fabs(joyDir) <= 90.0 && dirToVehicle) ||
+              ((10.0 * rotDir > dirThre && 360.0 - 10.0 * rotDir > dirThre) && fabs(joyDir) > 90.0 && dirToVehicle)) {
+            continue;
+          }
+          if (clearPathList[i] < pointPerPathThre) {
+            float penaltyScore = 1.0 - pathPenaltyList[i] / costHeightThre;
+            if (penaltyScore < costScore) penaltyScore = costScore;
 
+            float dirDiff = fabs(joyDir - endDirPathList[i % pathNum] - (10.0 * rotDir - 180.0));
+            if (dirDiff > 360.0) {
+              dirDiff -= 360.0;
+            }
+            if (dirDiff > 180.0) {
+              dirDiff = 360.0 - dirDiff;
+            }
+
+            float rotDirW;
+            if (rotDir < 18) rotDirW = fabs(fabs(rotDir - 9) + 1);
+            else rotDirW = fabs(fabs(rotDir - 27) + 1);
+
+            //!score calculation
+            float score = (1 - sqrt(sqrt(dirWeight * dirDiff))) * rotDirW * rotDirW * rotDirW * rotDirW * penaltyScore;
+            if (score > 0) {
+              clearPathPerGroupScore[groupNum * rotDir + pathList[i % pathNum]] += score;
+            }
+          }
+        }
+```
