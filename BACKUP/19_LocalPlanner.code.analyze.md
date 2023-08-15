@@ -342,3 +342,31 @@ if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / 
             }
           }
 ```
+需要原地旋转时应该满足的条件：
+1. 点在小车的外切圆之内
+2. 该点不在小车内
+3. 满足terrain analysis
+
+```c
+if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || fabs(y) > vehicleWidth / pathScale / 2.0) && (h > obstacleHeightThre || !useTerrainAnalysis) && checkRotObstacle) {
+            //condition 1: dis < diameter / pathScale                                                                     ---->satify the situation is that the point is too close to the vehicle
+            //conditoin 2: fabs(x) > vehicleLength / pathScale / 2.0 || fabs(y) > vehicleWidth / pathScale / 2.0          ----->but the point cant be in the vehicle
+            //condition 3: h > obstacleHeightThre || !useTerrainAnalysis                                                  ------>meanwile it should satify the hight check
+            //conditino 4: checkRotObstacle                                                                               ----->mode configuration
+
+            float angObs = atan2(y, x) * 180.0 / PI;
+            if (angObs > 0) {
+              //在逆时针方向 这里的Obs应该是observasion的意思正好满足观察到小车的最小旋转角度
+              if (minObsAngCCW > angObs - angOffset) minObsAngCCW = angObs - angOffset;
+              if (minObsAngCW < angObs + angOffset - 180.0) minObsAngCW = angObs + angOffset - 180.0;
+            } else {
+              //在逆时针方向
+              if (minObsAngCW < angObs + angOffset) minObsAngCW = angObs + angOffset;
+              if (minObsAngCCW > 180.0 + angObs - angOffset) minObsAngCCW = 180.0 + angObs - angOffset;
+            }
+          }
+        }
+```
+
+
+
