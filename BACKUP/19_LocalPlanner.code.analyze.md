@@ -43,3 +43,38 @@ int main(int argc, char** argv)
   ros::Publisher pubPath = nh.advertise<nav_msgs::Path> ("/path", 5);
   nav_msgs::Path path;
 ```
+```
+printf ("\nReading path files.\n");
+
+  if (autonomyMode) {
+    joySpeed = autonomySpeed / maxSpeed;
+
+    if (joySpeed < 0) joySpeed = 0;
+    else if (joySpeed > 1.0) joySpeed = 1.0;
+  }
+
+  for (int i = 0; i < laserCloudStackNum; i++) {
+    laserCloudStack[i].reset(new pcl::PointCloud<pcl::PointXYZI>());
+  }
+  for (int i = 0; i < groupNum; i++) {
+    startPaths[i].reset(new pcl::PointCloud<pcl::PointXYZ>());
+  }
+  #if PLOTPATHSET == 1
+  for (int i = 0; i < pathNum; i++) {
+    paths[i].reset(new pcl::PointCloud<pcl::PointXYZI>());
+  }
+  #endif
+  for (int i = 0; i < gridVoxelNum; i++) {
+    correspondences[i].resize(0);
+  }
+
+  laserDwzFilter.setLeafSize(laserVoxelSize, laserVoxelSize, laserVoxelSize);
+  terrainDwzFilter.setLeafSize(terrainVoxelSize, terrainVoxelSize, terrainVoxelSize);
+
+  readStartPaths();
+  #if PLOTPATHSET == 1
+  readPaths();
+  #endif
+  readPathList();
+  readCorrespondences();
+```
