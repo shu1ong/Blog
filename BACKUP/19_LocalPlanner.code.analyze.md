@@ -122,3 +122,57 @@ printf ("\nReading path files.\n");
       }
 
 ```
+
+然后对点云做了近邻裁剪（在车体坐标下）
+```c
+pcl::PointXYZI point;
+      plannerCloudCrop->clear();
+      int plannerCloudSize = plannerCloud->points.size();
+      for (int i = 0; i < plannerCloudSize; i++) {
+        float pointX1 = plannerCloud->points[i].x - vehicleX;
+        float pointY1 = plannerCloud->points[i].y - vehicleY;
+        float pointZ1 = plannerCloud->points[i].z - vehicleZ;
+
+        point.x = pointX1 * cosVehicleYaw + pointY1 * sinVehicleYaw;
+        point.y = -pointX1 * sinVehicleYaw + pointY1 * cosVehicleYaw;
+        point.z = pointZ1;
+        point.intensity = plannerCloud->points[i].intensity;
+
+        float dis = sqrt(point.x * point.x + point.y * point.y);
+        if (dis < adjacentRange && ((point.z > minRelZ && point.z < maxRelZ) || useTerrainAnalysis)) {
+          plannerCloudCrop->push_back(point);
+        }
+      }
+```
+同时在点云中添加边界信息
+```c
+      int boundaryCloudSize = boundaryCloud->points.size();
+      for (int i = 0; i < boundaryCloudSize; i++) {
+        point.x = ((boundaryCloud->points[i].x - vehicleX) * cosVehicleYaw + (boundaryCloud->points[i].y - vehicleY) * sinVehicleYaw);
+        point.y = (-(boundaryCloud->points[i].x - vehicleX) * sinVehicleYaw + (boundaryCloud->points[i].y - vehicleY) * cosVehicleYaw);
+        point.z = boundaryCloud->points[i].z;
+        point.intensity = boundaryCloud->points[i].intensity;
+
+        float dis = sqrt(point.x * point.x + point.y * point.y);
+        if (dis < adjacentRange) {
+          plannerCloudCrop->push_back(point);
+        }
+      }
+
+
+
+      int addedObstaclesSize = addedObstacles->points.size();
+      for (int i = 0; i < addedObstaclesSize; i++) {
+        point.x = ((addedObstacles->points[i].x - vehicleX) * cosVehicleYaw 
+                + (addedObstacles->points[i].y - vehicleY) * sinVehicleYaw);
+        point.y = (-(addedObstacles->points[i].x - vehicleX) * sinVehicleYaw 
+                + (addedObstacles->points[i].y - vehicleY) * cosVehicleYaw);
+        point.z = addedObstacles->points[i].z;
+        point.intensity = addedObstacles->points[i].intensity;
+
+        float dis = sqrt(point.x * point.x + point.y * point.y);
+        if (dis < adjacentRange) {
+          plannerCloudCrop->push_back(point);
+        }
+      }
+      ```
