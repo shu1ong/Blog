@@ -43,7 +43,7 @@ int main(int argc, char** argv)
   ros::Publisher pubPath = nh.advertise<nav_msgs::Path> ("/path", 5);
   nav_msgs::Path path;
 ```
-### path文件的读取
+## path文件的读取
 ```c++
 printf ("\nReading path files.\n");
 
@@ -77,5 +77,28 @@ printf ("\nReading path files.\n");
   readPaths();
   #endif
   readPathList();
-  readCorrespondences();
+```
+对于激光点云数据进行处理：如果是一帧的激光数据则与之前的激光数据进行叠加，而如果是terrainmap（已经处理好的数据？）则直接对plannerCloud进行更新
+```c++
+    if (newLaserCloud || newTerrainCloud) {
+      if (newLaserCloud) {
+        newLaserCloud = false;
+
+        laserCloudStack[laserCloudCount]->clear();
+        *laserCloudStack[laserCloudCount] = *laserCloudDwz;
+        laserCloudCount = (laserCloudCount + 1) % laserCloudStackNum;
+
+        plannerCloud->clear();
+        for (int i = 0; i < laserCloudStackNum; i++) {
+          *plannerCloud += *laserCloudStack[i];
+        }
+      }
+
+      if (newTerrainCloud) {
+        newTerrainCloud = false;
+
+        plannerCloud->clear();
+        *plannerCloud = *terrainCloudDwz;
+      }
+
 ```
