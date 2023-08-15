@@ -255,11 +255,8 @@ ps`这些数组的构成类似： arr[ang1[pathNumber] ang2[pathNumber] ang3[pat
 
 第一个if判断了如下的条件：
 1. 确定了是在近点（<adjecentRange = pathRange）
-2. 排除了距离gaolPoint目标点太远的点
-
-
-
-
+2. 排除了距离gaolPoint目标点太远的点（dis = 0.5）
+   
 ```c
 int plannerCloudCropSize = plannerCloudCrop->points.size();
         //this loop use to filter the planner cloud
@@ -270,6 +267,8 @@ int plannerCloudCropSize = plannerCloudCrop->points.size();
           float dis = sqrt(x * x + y * y);
 
 if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / pathScale || !pathCropByGoal) && checkObstacle) {
+```
+```c
             for (int rotDir = 0; rotDir < 36; rotDir++) {
               float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
               float angDiff = fabs(joyDir - (10.0 * rotDir - 180.0));
