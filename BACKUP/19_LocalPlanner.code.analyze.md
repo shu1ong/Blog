@@ -44,6 +44,18 @@ int main(int argc, char** argv)
   ros::Publisher pubPath = nh.advertise<nav_msgs::Path> ("/path", 5);
   nav_msgs::Path path;
 ```
+关于话题的订阅有几点值得说明的：
+1. /registered_scan 和 /terrain_map 应该都是激光扫描出来的地图信息，都可以作为input，这里应该是给了两种不同的接口。而在simulator中使用的是/terrain_map。
+2. /state_estimation是simulator中自带的状态估计怎么和imu接上尚且不知
+3. /way_point为TarePlanenr的output 发布话题，在没有开启palnner的情况下，可以通过rviz进行way_point的发布
+4. /joy节点是引用的ps3手柄库，在joy路径下也有ps4的库，ps3的手柄库和xbox通用。连接之后注意输入应该是Dinput模式，系统才能读到手柄的信号输入
+5. 关于手柄的信号输入有这么几点需要注意,在rostopic中输出的数据中axes数组中会有0值占位，但在joy->axes[]的调用中没有。注意对应关系。目前测得的对应关系如下(主要键位)：
+```
+axes[0 1 2 3 4 5] = [lh lv rh rv rt lt]
+lh : left horrizon
+lv : left vertical
+lt : left trigger
+```
 ### path文件的读取
 ```c++
 printf ("\nReading path files.\n");
