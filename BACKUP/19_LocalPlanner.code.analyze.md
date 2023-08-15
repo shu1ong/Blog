@@ -96,6 +96,12 @@ printf ("\nReading path files.\n");
 文件中保存了path的前向路径生成和体素网格邻近表，用作碰撞检测和路径筛选。可以查阅另一篇博客进行参考（todo）。
 # main
 之前的内容都属于初始化的内容，loop从这里开始
+```c
+  ros::Rate rate(100);
+  bool status = ros::ok();
+  while (status) {
+    ros::spinOnce(); //这里会调用前面订阅话题时所写的句柄函数
+```
 
 ### 对于激光点云数据进行处理
 如果是一帧的激光数据则与之前的激光数据进行叠加，而如果是terrainmap（已经处理好的数据？）则直接对plannerCloud进行更新
@@ -175,5 +181,40 @@ pcl::PointXYZI point;
           plannerCloudCrop->push_back(point);
         }
       }
-      ```
-      
+```
+开始主循环之前，进行了一些前置的初始处理：
+```c
+    //define pathRange
+   float pathRange = adjacentRange;
+   if (pathRange < minPathRange) pathRange = minPathRange;
+   if (pathRangeBySpeed) pathRange = adjacentRange * joySpeed;
+
+
+   bool pathFound = false;
+   
+   //define pathScale
+   float defPathScale = pathScale;
+   if (pathScaleBySpeed) pathScale = defPathScale * joySpeed;
+   if (pathScale < minPathScale) pathScale = minPathScale;
+   
+   //goalPoint TF
+   float relativeGoalDis = adjacentRange;
+   //由way_point接收的数据 
+   if (autonomyMode) {
+     float relativeGoalX = ((goalX - vehicleX) * cosVehicleYaw + 
+     (goalY - vehicleY) * sinVehicleYaw);
+     float relativeGoalY = (-(goalX - vehicleX) * sinVehicleYaw + 
+     (goalY - vehicleY) * cosVehicleYaw);
+
+     relativeGoalDis = sqrt(relativeGoalX * relativeGoalX + relativeGoalY * relativeGoalY);
+     joyDir = atan2(relativeGoalY, relativeGoalX) * 180 / PI;
+     
+
+        //limit the max turn around
+     if (!twoWayDrive) {
+       if (joyDir > 90.0) joyDir = 90.0;
+       else if (joyDir < -90.0) joyDir = -90.0;
+     }
+   }
+
+```
