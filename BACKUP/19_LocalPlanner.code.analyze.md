@@ -268,6 +268,12 @@ int plannerCloudCropSize = plannerCloudCrop->points.size();
 
 if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / pathScale || !pathCropByGoal) && checkObstacle) {
 ```
+这里直接进行的是方向上的划分，将path接在了36个方向上，形成了一个包围小车的大圆。
+然后得对每个方向进行遍历。
+
+注意这里所有的计算都是基于车体坐标系下进行的。
+
+然后计算了当其目标点与遍历方向之间的夹角。
 ```c
             for (int rotDir = 0; rotDir < 36; rotDir++) {
               float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
@@ -275,10 +281,25 @@ if (dis < pathRange / pathScale && (dis <= (relativeGoalDis + goalClearRange) / 
               if (angDiff > 180.0) {
                 angDiff = 360.0 - angDiff;
               }//取劣弧
+```
+如果说不想进入continue则需要使得if判断为假，那么所有的||运算的元素都必须为false
+
+则有
+
+`(angDiff > dirThre && !dirToVehicle) = false`
+
+又有`dirToVehicle = false`，所以必须有`angDiff > dirThre == false`
+取其补集则有：`angDiff <= dirThre`此时angDiff所得出的方向均为背离目标点的方向。
+
+``
+```c
               if ((angDiff > dirThre && !dirToVehicle) || (fabs(10.0 * rotDir - 180.0) > dirThre && fabs(joyDir) <= 90.0 && dirToVehicle) ||
                   ((10.0 * rotDir > dirThre && 360.0 - 10.0 * rotDir > dirThre) && fabs(joyDir) > 90.0 && dirToVehicle)) {
                 continue;
               }
+```
+
+```c
               //return to galobal coodiantion to calculate the scaleY
               float x2 = cos(rotAng) * x + sin(rotAng) * y;
               float y2 = -sin(rotAng) * x + cos(rotAng) * y;
