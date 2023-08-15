@@ -144,7 +144,7 @@ pcl::PointXYZI point;
         }
       }
 ```
-同时在点云中添加边界信息
+同时在点云中添加边界信息，其中`boundaryCloud`发布的是人为划定的边界信息，而`addedObstacles`在话题中没有呈现，可能是zhagn ji早期的代码topic接口（todo：需要确认）
 ```c
       int boundaryCloudSize = boundaryCloud->points.size();
       for (int i = 0; i < boundaryCloudSize; i++) {
@@ -176,3 +176,4 @@ pcl::PointXYZI point;
         }
       }
       ```
+      
