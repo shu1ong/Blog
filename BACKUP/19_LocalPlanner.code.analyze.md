@@ -401,31 +401,11 @@ for (int i = 0; i < 36 * pathNum; i++) {
 
 ```c
           if (clearPathList[i] < pointPerPathThre) {
+            //高度对于得分的影响
             float penaltyScore = 1.0 - pathPenaltyList[i] / costHeightThre;
-            if (penaltyScore < costScore) penaltyScore = costScore;
-
-            float dirDiff = fabs(joyDir - endDirPathList[i % pathNum] - (10.0 * rotDir - 180.0));
-            if (dirDiff > 360.0) {
-              dirDiff -= 360.0;
-            }
-            if (dirDiff > 180.0) {
-              dirDiff = 360.0 - dirDiff;
-            }
-
-            float rotDirW;
-            if (rotDir < 18) rotDirW = fabs(fabs(rotDir - 9) + 1);
-            //+1 原因是 rotDir是从0开始的
-            //使得rot方向在+-90的范围内
-            else rotDirW = fabs(fabs(rotDir - 27) + 1);//同上
-
-            //!score calculation
-            float score = (1 - sqrt(sqrt(dirWeight * dirDiff))) * rotDirW * rotDirW * rotDirW * rotDirW * penaltyScore;
-            if (score > 0) {
-              clearPathPerGroupScore[groupNum * rotDir + pathList[i % pathNum]] += score;
-            }
-          }
-        }
+            if (penaltyScore < costScore) penaltyScore = costScore;c
 ```
+
 $$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore $$
 这里$rotDirW^{4}$的原因是会有+-90的值，取绝对值。
 
@@ -440,6 +420,132 @@ $$ dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0
 而dirDiff则是每条path在得分中的权重项，得分的高低与path与当前目标点之间的夹角有关，选取夹角尽可能小的路径，会获得更高的score。
 
 其取值的范围为 ：[0,90]单位为弧度
+
+最后值得注意的是每个path的得分最后是加在了该group下
+```c
+            //每个方向下343条path的不同得分
+            float dirDiff = fabs(joyDir - endDirPathList[i % pathNum] - (10.0 * rotDir - 180.0));
+            if (dirDiff > 360.0) {
+              dirDiff -= 360.0;
+            }
+            if (dirDiff > 180.0) {
+              dirDiff = 360.0 - dirDiff;
+            }
+            //36个方向的得分（实际遍历的个数是小于36的）
+            float rotDirW;
+            if (rotDir < 18) rotDirW = fabs(fabs(rotDir - 9) + 1);
+            //+1 原因是 rotDir是从0开始的
+            //使得rot方向在+-90的范围内
+            else rotDirW = fabs(fabs(rotDir - 27) + 1);//同上
+
+            //!score calculation
+            float score = (1 - sqrt(sqrt(dirWeight * dirDiff))) * rotDirW * rotDirW * rotDirW * rotDirW * penaltyScore;
+            if (score > 0) {
+              clearPathPerGroupScore[groupNum * rotDir + pathList[i % pathNum]] += score;
+            }
+          }
+        }
+```
+选择得分最高的group，该group需要满足：
+1. 是当前最高的score
+2. 在可视范围之内（前后满足一个即可）[这个也被写死了] 
+```c
+        float maxScore = 0;
+        int selectedGroupID = -1;
+        for (int i = 0; i < 36 * groupNum; i++) {
+          int rotDir = int(i / groupNum);//仍然是0～35
+          float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
+          float rotDeg = 10.0 * rotDir;
+          if (rotDeg > 180.0) rotDeg -= 360.0;
+          if (maxScore < clearPathPerGroupScore[i] && ((rotAng * 180.0 / PI > minObsAngCW && rotAng * 180.0 / PI < minObsAngCCW) || 
+              (rotDeg > minObsAngCW && rotDeg < minObsAngCCW && twoWayDrive) || !checkRotObstacle)) {
+            maxScore = clearPathPerGroupScore[i];
+            selectedGroupID = i;
+          }
+        }
+```
+
+如果有选中的group，找出来发布到`\path`的话题中去
+```c
+        if (selectedGroupID >= 0) {
+          int rotDir = int(selectedGroupID / groupNum);
+          float rotAng = (10.0 * rotDir - 180.0) * PI / 180;
+
+          selectedGroupID = selectedGroupID % groupNum;
+          int selectedPathLength = startPaths[selectedGroupID]->points.size();
+          path.poses.resize(selectedPathLength);
+          for (int i = 0; i < selectedPathLength; i++) {
+            float x = startPaths[selectedGroupID]->points[i].x;
+            float y = startPaths[selectedGroupID]->points[i].y;
+            float z = startPaths[selectedGroupID]->points[i].z;
+            float dis = sqrt(x * x + y * y);
+
+            if (dis <= pathRange / pathScale && dis <= relativeGoalDis / pathScale) {
+              path.poses[i].pose.position.x = pathScale * (cos(rotAng) * x - sin(rotAng) * y);
+              path.poses[i].pose.position.y = pathScale * (sin(rotAng) * x + cos(rotAng) * y);
+              path.poses[i].pose.position.z = pathScale * z;
+            } else {
+              path.poses.resize(i);
+              break;
+            }
+          }
+
+          path.header.stamp = ros::Time().fromSec(odomTime);
+          path.header.frame_id = "vehicle";
+          pubPath.publish(path);
+        }
+```
+如果没有找到，则把pathscale减小，继续搜索
+```c
+        if (selectedGroupID < 0) {
+          if (pathScale >= minPathScale + pathScaleStep) {
+            pathScale -= pathScaleStep;
+            pathRange = adjacentRange * pathScale / defPathScale;
+          } else {
+            pathRange -= pathRangeStep;
+          }
+        } else {
+          pathFound = true;
+          break;
+        }
+      }
+      pathScale = defPathScale;
+
+      if (!pathFound) {
+        path.poses.resize(1);
+        path.poses[0].pose.position.x = 0;
+        path.poses[0].pose.position.y = 0;
+        path.poses[0].pose.position.z = 0;
+
+        path.header.stamp = ros::Time().fromSec(odomTime);
+        path.header.frame_id = "vehicle";
+        pubPath.publish(path);
+
+        #if PLOTPATHSET == 1
+        freePaths->clear();
+        sensor_msgs::PointCloud2 freePaths2;
+        pcl::toROSMsg(*freePaths, freePaths2);
+        freePaths2.header.stamp = ros::Time().fromSec(odomTime);
+        freePaths2.header.frame_id = "vehicle";
+        pubFreePaths.publish(freePaths2);
+        #endif
+      }
+
+      /*sensor_msgs::PointCloud2 plannerCloud2;
+      pcl::toROSMsg(*plannerCloudCrop, plannerCloud2);
+      plannerCloud2.header.stamp = ros::Time().fromSec(odomTime);
+      plannerCloud2.header.frame_id = "vehicle";
+      pubLaserCloud.publish(plannerCloud2);*/
+    }
+
+    status = ros::ok();
+    rate.sleep();
+  }
+
+  return 0;
+}
+
+```
 
 
 
