@@ -250,7 +250,14 @@ ps`这些数组的构成类似： arr[ang1[pathNumber] ang2[pathNumber] ang3[pat
         float angOffset = atan2(vehicleWidth, vehicleLength) * 180.0 / PI;
 
 ```
-接着进入核心函数
+接着进入核心函数，主要功能为点云的碰撞检测：
+
+程序会遍历每个点，与环路径（360）进行匹配。匹配的方式通过距离距离计算进行，对应到文件中的体素索引。
+
+将邻近路径进行标记。标记个数大于阈值时将path进行虑除。同时在遍历时加入了一定的规则去减小需要遍历的方向，加快计算。
+
+下面是详细的程序解析。
+
 首先计算了每个点到车的距离，使用了`PathScale`对距离进行缩放。但实际上这里`pathScale = 1`。。。
 
 第一个if判断了如下的条件：
@@ -356,6 +363,8 @@ if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || 
 ```
 在逆时针方向 这里的Obs应该是observasion的意思正好满足观察到小车的最小旋转角度
 
+分别分为两个方向，angObs的正向为逆时针
+
 而这里的`minObsAngCCW`和`minObsAngCW` 应该是正好互补的(180)
 ```c
             float angObs = atan2(y, x) * 180.0 / PI;
@@ -371,7 +380,7 @@ if (dis < diameter / pathScale && (fabs(x) > vehicleLength / pathScale / 2.0 || 
         }
 ```
 
-
+对所有的path进行遍历，其中rotDir的取值为0～35
 ```c
 for (int i = 0; i < 36 * pathNum; i++) {
           int rotDir = int(i / pathNum);
@@ -383,6 +392,14 @@ for (int i = 0; i < 36 * pathNum; i++) {
               ((10.0 * rotDir > dirThre && 360.0 - 10.0 * rotDir > dirThre) && fabs(joyDir) > 90.0 && dirToVehicle)) {
             continue;
           }
+```
+
+对于一个没有被滤除的点（可能不是障碍物，是不平整的起伏路面）score的计算为 1 - （当前的intensity/定值（0.1））
+
+这个点的高度越高（小于被判定为障碍物的最小高度），他的penalty就会越大。而相应的`PenaltyScore`就会就会越小。
+
+
+```c
           if (clearPathList[i] < pointPerPathThre) {
             float penaltyScore = 1.0 - pathPenaltyList[i] / costHeightThre;
             if (penaltyScore < costScore) penaltyScore = costScore;
@@ -397,7 +414,9 @@ for (int i = 0; i < 36 * pathNum; i++) {
 
             float rotDirW;
             if (rotDir < 18) rotDirW = fabs(fabs(rotDir - 9) + 1);
-            else rotDirW = fabs(fabs(rotDir - 27) + 1);
+            //+1 原因是 rotDir是从0开始的
+            //使得rot方向在+-90的范围内
+            else rotDirW = fabs(fabs(rotDir - 27) + 1);//同上
 
             //!score calculation
             float score = (1 - sqrt(sqrt(dirWeight * dirDiff))) * rotDirW * rotDirW * rotDirW * rotDirW * penaltyScore;
@@ -407,3 +426,20 @@ for (int i = 0; i < 36 * pathNum; i++) {
           }
         }
 ```
+$$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore $$
+这里$rotDirW^{4}$的原因是会有+-90的值，取绝对值。
+
+此处的score越小，则代表cost越小。求最小的score即可。
+
+因此rotDirW所代表的取值倾向为优先选取正前方的方向或者正后方的方向（180-90），（0-90）。
+
+其取值的范围为[0,9]
+
+$$ dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0)) $$
+
+而dirDiff则是每条path在得分中的权重项，得分的高低与path与当前目标点之间的夹角有关，选取夹角尽可能小的路径，会获得更高的score。
+
+其取值的范围为 ：[0,90]单位为弧度
+
+
+
