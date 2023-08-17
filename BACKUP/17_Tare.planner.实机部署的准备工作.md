@@ -15,9 +15,23 @@
 `/state_estimation_at_scan`主要是激光和omotry的融合后的话题
 
 
-log
+### log
 
-1. 接通了scoutmini的固件和localPlanner
+1. 接通了scoutmini的固件和localPlanner,但出现了一定的报错
+
+```bash
+[ERROR] [1692238988.354673205]: 
+Client [/scout_base_node] wants topic /cmd_vel to have datatype/md5sum [geometry_msgs/Twist/9f195f881246fdfa2798d1d3eebca84a], 
+but our version has [geometry_msgs/TwistStamped/98d34b0043a2093cf9d9345ab6eef12e]. Dropping connection.
+```
+使用了不同的message库的原因
+
+在pathFollower里面主要使用的是` <geometry_msgs/TwistStamped.h>`
+
+而在scout_mini的接受的使用主要是`geometry_msgs/Twist.h`
+
+二者之间的不同尚不清楚，但主要出现的问题为md5的哈希检验无法通过。
+
 
 ---
 
