@@ -45,6 +45,10 @@ int main(int argc, char** argv)
 
 这些配置的信息存在.h的头文件里
 
+在class SensorCoveragePlanner3D中可以看到同名的构造函数，这一构造函数在类实体化时会自动调用(根据传入的参数).
+
+而函数具体的内容应该参照cpp文件?
+
 ```c
 class SensorCoveragePlanner3D
 {
