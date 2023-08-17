@@ -113,7 +113,7 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
   //` every second call the execute function(main function) 
   execution_timer_ = nh.createTimer(ros::Duration(1.0), &SensorCoveragePlanner3D::execute, this);
   ```
-  
+  接着进行相关话题的订阅,并执行相应的句柄函数.
   ```c
   //` subscribe topic
   exploration_start_sub_    =  nh.subscribe(pp_.sub_start_exploration_topic_, 5, &SensorCoveragePlanner3D::ExplorationStartCallback, this); //` no publisher
@@ -124,6 +124,9 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
   coverage_boundary_sub_    =  nh.subscribe(pp_.sub_coverage_boundary_topic_, 1, &SensorCoveragePlanner3D::CoverageBoundaryCallback, this);
   viewpoint_boundary_sub_   =  nh.subscribe(pp_.sub_viewpoint_boundary_topic_, 1, &SensorCoveragePlanner3D::ViewPointBoundaryCallback, this);
   nogo_boundary_sub_        =  nh.subscribe(pp_.sub_nogo_boundary_topic_, 1, &SensorCoveragePlanner3D::NogoBoundaryCallback, this);
+  ```
+  这里是关于话题发布的部分
+  ```c
   //` establish publisher
   global_path_full_publisher_                = nh.advertise<nav_msgs::Path>("global_path_full", 1);
   global_path_publisher_                     = nh.advertise<nav_msgs::Path>("global_path", 1);
@@ -142,6 +145,6 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
 }
 
 ```
-
+## 主函数excute
 
 
