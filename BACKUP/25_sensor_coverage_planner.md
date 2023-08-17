@@ -24,7 +24,7 @@ target_link_libraries(tare_planner_node ${catkin_LIBRARIES} sensor_coverage_plan
 ```
 最后确定到主程序的位置在`tare_planner_node.cpp`中，
 
-在初始化节点之后,进行了类的实体化,并取名为`tare_planner`
+在初始化节点之后,进行了类的实体化,并取名为`tare_planner`, 并传入了ros节点的句柄
 
 然后运行了ros::spin()进行消息的通讯
 
@@ -41,3 +41,20 @@ int main(int argc, char** argv)
   return 0;
 }
 ```
+所以去找`sensor_coverage_planner_3d_ns` namesapce下定义的class `SensorCoveragePlanner3D`
+
+这些配置的信息存在.h的头文件里
+
+```c
+class SensorCoveragePlanner3D
+{
+public:
+  explicit SensorCoveragePlanner3D(ros::NodeHandle& nh, ros::NodeHandle& nh_p);
+  bool initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p);
+  void execute(const ros::TimerEvent&);
+  ~SensorCoveragePlanner3D() = default;
+
+...
+}
+```
+
