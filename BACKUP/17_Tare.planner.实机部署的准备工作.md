@@ -14,6 +14,11 @@
 其中`/terrain`相关的两个话题，主要处理激光点云的拼接（不同帧）和分割（根据车的距离的远近）【师兄说的】
 `/state_estimation_at_scan`主要是激光和omotry的融合后的话题
 
+
+log
+
+1. 接通了scoutmini的固件和localPlanner
+
 ---
 
 - [ ] 小车的大小
