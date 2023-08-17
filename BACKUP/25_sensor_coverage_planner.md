@@ -1,5 +1,9 @@
 # [sensor_coverage_planner](https://github.com/shu1ong/gitblog/issues/25)
 
+- [程序节点分析与主程序入口逻辑](#程序节点分析与主程序入口逻辑)
+- [`initialize`函数的作用](#initialize函数的作用)
+- [主函数excute](#主函数excute)
+
 ## 程序节点分析与主程序入口逻辑
 
 Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch.
