@@ -43,12 +43,7 @@ int main(int argc, char** argv)
 ```
 所以去找`sensor_coverage_planner_3d_ns` namesapce下定义的class `SensorCoveragePlanner3D`
 
-这些配置的信息存在.h的头文件里
-
-在class SensorCoveragePlanner3D中可以看到同名的构造函数，这一构造函数在类实体化时会自动调用(根据传入的参数).
-
-而函数具体的内容应该参照cpp文件?
-
+.h的头文件里可以看到该类的声明其中包括了同名的构造函数,这一构造函数在类实体化时会自动调用(根据传入的参数).
 ```c
 class SensorCoveragePlanner3D
 {
@@ -60,5 +55,11 @@ public:
 
 ...
 }
+```
+而该函数的定义则是在.cpp的文件中完成的
+
+```c
+
+
 ```
 
