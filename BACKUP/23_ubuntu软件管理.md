@@ -4,12 +4,17 @@
 
 安装
 ```bash
+sudo dkpg -i 
+```
+查询
+```bash
+sudo dkpg -l
 
 ```
 
 卸载
-```
-
+```bash
+sudo dkpg -r
 ```
 
 
