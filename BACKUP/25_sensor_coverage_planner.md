@@ -13,7 +13,7 @@ Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch
     </node>
 ```
 
-该节点对应的cpp文件在src中去寻找,对应关系描述在cmakelist中
+该节点对应的cpp文件在src中去寻找,对应关系描述在cmakelists中
 ```c
 add_executable(navigationBoundary src/navigation_boundary_publisher/navigationBoundary.cpp)
 target_link_libraries(navigationBoundary ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -22,4 +22,18 @@ add_executable(tare_planner_node src/tare_planner_node/tare_planner_node.cpp)
 add_dependencies(tare_planner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(tare_planner_node ${catkin_LIBRARIES} sensor_coverage_planner_ground)
 ```
-最后确定到主程序的位置在`tare_planner_node.cpp`中
+最后确定到主程序的位置在`tare_planner_node.cpp`中，而这个cpp的主要作用是进行了函数`SensorCoveragePlanner3D`的调用.
+
+```c
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "tare_planner_node");
+  ros::NodeHandle node_handle;
+  ros::NodeHandle private_node_handle("~");
+
+  sensor_coverage_planner_3d_ns::SensorCoveragePlanner3D tare_planner(node_handle, private_node_handle);
+
+  ros::spin();
+  return 0;
+}
+```
