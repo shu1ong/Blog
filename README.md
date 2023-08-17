@@ -5,7 +5,7 @@ My personal blog using issues and GitHub Actions (随意转载，无需署名)
 | Name | Link | Desc | 
  | ---- | ---- | ---- |
 ## 最近更新
-- [Tare planner 实机部署的准备工作](https://github.com/shu1ong/gitblog/issues/22)--2023-08-17
+- [ubuntu软件管理](https://github.com/shu1ong/gitblog/issues/23)--2023-08-17
 - [关于不同workspace 同名launch文件的启动机制](https://github.com/shu1ong/gitblog/issues/21)--2023-08-16
 - [TerrainAnalysis](https://github.com/shu1ong/gitblog/issues/20)--2023-08-16
 - [LocalPlanner code analyze](https://github.com/shu1ong/gitblog/issues/19)--2023-08-15
