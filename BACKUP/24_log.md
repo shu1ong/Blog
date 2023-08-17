@@ -1,5 +1,10 @@
 # [log](https://github.com/shu1ong/gitblog/issues/24)
 
+- [2023年 08月 17日 星期四](#2023年-08月-17日-星期四)
+- [todo](#todo)
+
+
+
 ## 2023年 08月 17日 星期四
 
 + 把src进行了打包与缩减，在github上进行了备份
