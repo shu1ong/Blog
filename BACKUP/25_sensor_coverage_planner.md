@@ -97,11 +97,18 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
     return false;
   }
 ```
-
+另外的一个初始化程序. 也是一堆重载的点云文件，暂时跳过.不过里面涉及到了车体的位置初始化.
 ```c
   pd_.Initialize(nh, nh_p);
+
+```
+然后这两句也整不明白
+```c
   pd_.keypose_graph_->SetAllowVerticalEdge(false);
   lidar_model_ns::LiDARModel::setCloudDWZResol(pd_.planning_env_->GetPlannerCloudResolution());
+  ```
+  
+  ```c
   //` every second call the execute function(main function) 
   execution_timer_ = nh.createTimer(ros::Duration(1.0), &SensorCoveragePlanner3D::execute, this);
   //` subscribe topic
