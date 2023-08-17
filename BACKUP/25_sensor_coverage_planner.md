@@ -56,10 +56,79 @@ public:
 ...
 }
 ```
-而该函数的定义则是在.cpp的文件中完成的
+而该函数的定义则是在.cpp的文件中完成的,在定义的同时进行了一些参数的初始化.他的主要作用是拉起对于`initialize`的调用.
 
 ```c
+SensorCoveragePlanner3D::SensorCoveragePlanner3D(ros::NodeHandle& nh, ros::NodeHandle& nh_p)
+  : keypose_cloud_update_(false)
+  , initialized_(false)
+  , lookahead_point_update_(false)
+  , relocation_(false)
+  , start_exploration_(false)
+  , exploration_finished_(false)
+  , near_home_(false)
+  , at_home_(false)
+  , stopped_(false)
+  , test_point_update_(false)
+  , viewpoint_ind_update_(false)
+  , step_(false)
+  , use_momentum_(false)
+  , lookahead_point_in_line_of_sight_(true)
+  , registered_cloud_count_(0)
+  , keypose_count_(0)
+  , direction_change_count_(0)
+  , direction_no_change_count_(0)
+  , momentum_activation_count_(0)
+{
+  initialize(nh, nh_p);
+  PrintExplorationStatus("Exploration Started", false);
+}
+```
+## `initialize`函数的作用
 
+首先是参数的读取,主要是一些点云相关的变量以及其匹配对应的话题和一些配置用的bool变量
+```c
+bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p)
+{
+  if (!pp_.ReadParameters(nh_p)){
+    ROS_ERROR("Read parameters failed");
+    return false;
+  }
+```
+
+```c
+  pd_.Initialize(nh, nh_p);
+  pd_.keypose_graph_->SetAllowVerticalEdge(false);
+  lidar_model_ns::LiDARModel::setCloudDWZResol(pd_.planning_env_->GetPlannerCloudResolution());
+  //` every second call the execute function(main function) 
+  execution_timer_ = nh.createTimer(ros::Duration(1.0), &SensorCoveragePlanner3D::execute, this);
+  //` subscribe topic
+  exploration_start_sub_    =  nh.subscribe(pp_.sub_start_exploration_topic_, 5, &SensorCoveragePlanner3D::ExplorationStartCallback, this); //` no publisher
+  registered_scan_sub_      =  nh.subscribe(pp_.sub_registered_scan_topic_, 5, &SensorCoveragePlanner3D::RegisteredScanCallback, this);
+  terrain_map_sub_          =  nh.subscribe(pp_.sub_terrain_map_topic_, 5, &SensorCoveragePlanner3D::TerrainMapCallback, this);
+  terrain_map_ext_sub_      =  nh.subscribe(pp_.sub_terrain_map_ext_topic_, 5, &SensorCoveragePlanner3D::TerrainMapExtCallback, this);
+  state_estimation_sub_     =  nh.subscribe(pp_.sub_state_estimation_topic_, 5, &SensorCoveragePlanner3D::StateEstimationCallback, this);
+  coverage_boundary_sub_    =  nh.subscribe(pp_.sub_coverage_boundary_topic_, 1, &SensorCoveragePlanner3D::CoverageBoundaryCallback, this);
+  viewpoint_boundary_sub_   =  nh.subscribe(pp_.sub_viewpoint_boundary_topic_, 1, &SensorCoveragePlanner3D::ViewPointBoundaryCallback, this);
+  nogo_boundary_sub_        =  nh.subscribe(pp_.sub_nogo_boundary_topic_, 1, &SensorCoveragePlanner3D::NogoBoundaryCallback, this);
+  //` establish publisher
+  global_path_full_publisher_                = nh.advertise<nav_msgs::Path>("global_path_full", 1);
+  global_path_publisher_                     = nh.advertise<nav_msgs::Path>("global_path", 1);
+  old_global_path_publisher_                 = nh.advertise<nav_msgs::Path>("old_global_path", 1);
+  to_nearest_global_subspace_path_publisher_ = nh.advertise<nav_msgs::Path>("to_nearest_global_subspace_path", 1);
+  local_tsp_path_publisher_                  = nh.advertise<nav_msgs::Path>("local_path", 1);
+  exploration_path_publisher_                = nh.advertise<nav_msgs::Path>("exploration_path", 1);
+  waypoint_pub_                              = nh.advertise<geometry_msgs::PointStamped>(pp_.pub_waypoint_topic_, 2);
+  exploration_finish_pub_                    = nh.advertise<std_msgs::Bool>(pp_.pub_exploration_finish_topic_, 2);
+  runtime_breakdown_pub_                     = nh.advertise<std_msgs::Int32MultiArray>(pp_.pub_runtime_breakdown_topic_, 2);
+  runtime_pub_                               = nh.advertise<std_msgs::Float32>(pp_.pub_runtime_topic_, 2);
+  momentum_activation_count_pub_             = nh.advertise<std_msgs::Int32>(pp_.pub_momentum_activation_count_topic_, 2);
+  // Debug
+  pointcloud_manager_neighbor_cells_origin_pub_ = nh.advertise<geometry_msgs::PointStamped>("pointcloud_manager_neighbor_cells_origin", 1);
+  return true;
+}
 
 ```
+
+
 
