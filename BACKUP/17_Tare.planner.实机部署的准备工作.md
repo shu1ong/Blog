@@ -4,7 +4,7 @@
 在官方的文档中使用的是配套的gazebo环境，确认input的方法通过rostpic进行。
 将环境和planner分别启动，然后分析环境发布的topic和planner订阅的topic来确定需要进行的工作。
 其中重要的话题有如下几个:
-```
+```c
 /state_estimation_at_scan [nav_msgs/Odometry]
 /terrain_map_ext [sensor_msgs/PointCloud2]
 /terrain_map [sensor_msgs/PointCloud2]
@@ -26,7 +26,7 @@ but our version has [geometry_msgs/TwistStamped/98d34b0043a2093cf9d9345ab6eef12e
 ```
 使用了不同的message库的原因
 
-在pathFollower里面主要使用的是` <geometry_msgs/TwistStamped.h>`
+在pathFollower里面主要使用的是`geometry_msgs/TwistStamped.h`
 
 而在scout_mini的接受的使用主要是`geometry_msgs/Twist.h`
 
