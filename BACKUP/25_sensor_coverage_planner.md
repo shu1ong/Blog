@@ -1,5 +1,7 @@
 # [sensor_coverage_planner](https://github.com/shu1ong/gitblog/issues/25)
 
+## 程序节点分析与主程序入口逻辑
+
 Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch.
 
 其中比较重要的有两段，一段是对`explore.launch`的调用，一段是对`navigationBoundary`pkg的调用。
