@@ -22,7 +22,11 @@ add_executable(tare_planner_node src/tare_planner_node/tare_planner_node.cpp)
 add_dependencies(tare_planner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(tare_planner_node ${catkin_LIBRARIES} sensor_coverage_planner_ground)
 ```
-最后确定到主程序的位置在`tare_planner_node.cpp`中，而这个cpp的主要作用是进行了函数`SensorCoveragePlanner3D`的调用.
+最后确定到主程序的位置在`tare_planner_node.cpp`中，
+
+在初始化节点之后,进行了类的实体化,并取名为`tare_planner`
+
+然后运行了ros::spin()进行消息的通讯
 
 ```c
 int main(int argc, char** argv)
