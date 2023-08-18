@@ -108,9 +108,35 @@ void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2C
   }
 }
 ```
-**第四个函数**`TerrainMapExtCallback`,这个用来接受广域terrainmap的,用不上暂时略过.
+**第四个函数**`TerrainMapExtCallback`,与上一个函数基本相同,这个用来接受广域terrainmap的,用不上暂时略过.
 
-第五个函数
+**第五个函数**`StateEstimationCallback`,
+```c++
+void SensorCoveragePlanner3D::StateEstimationCallback(const nav_msgs::Odometry::ConstPtr& state_estimation_msg) {
+  pd_.robot_position_ = state_estimation_msg->pose.pose.position;
+  // Todo: use a boolean
+  if (std::abs(pd_.initial_position_.x()) < 0.01 && std::abs(pd_.initial_position_.y()) < 0.01 && std::abs(pd_.initial_position_.z()) < 0.01) {
+    pd_.initial_position_.x() = pd_.robot_position_.x;// = 0
+    pd_.initial_position_.y() = pd_.robot_position_.y;// = 0
+    pd_.initial_position_.z() = pd_.robot_position_.z;// = 0
+  }
+  
+  double roll, pitch, yaw;
+  geometry_msgs::Quaternion geo_quat = state_estimation_msg->pose.pose.orientation;
+  tf::Matrix3x3(tf::Quaternion(geo_quat.x, geo_quat.y, geo_quat.z, geo_quat.w)).getRPY(roll, pitch, yaw);
+
+  pd_.robot_yaw_ = yaw;
+
+  if (state_estimation_msg->twist.twist.linear.x > 0.4) {
+    pd_.moving_forward_ = true;
+  }
+  else if (state_estimation_msg->twist.twist.linear.x < -0.4) {
+    pd_.moving_forward_ = false;
+  }
+  initialized_ = true;
+}
+```
+
 
 
 
