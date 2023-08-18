@@ -1,9 +1,5 @@
 # [sensor_coverage_planner](https://github.com/shu1ong/gitblog/issues/25)
 
-- [程序节点分析与主程序入口逻辑](#程序节点分析与主程序入口逻辑)
-- [`initialize`函数的作用](#initialize函数的作用)
-- [主函数excute](#主函数excute)
-
 ## 程序节点分析与主程序入口逻辑
 
 Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch.
@@ -150,5 +146,120 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
 
 ```
 ## 主函数excute
+```c
+void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
+{
+  //star flag the value of the !start_exploration_ =  true 
+  //`if the start signal is needed ,  should have start_exploration_ = true
+  if (!pp_.kAutoStart && !start_exploration_)
+  {
+    ROS_INFO("Waiting for start signal");
+    return;
+  }
 
+  Timer overall_processing_timer("overall processing");
+  update_representation_runtime_ = 0;
+  local_viewpoint_sampling_runtime_ = 0;
+  local_path_finding_runtime_ = 0;
+  global_planning_runtime_ = 0;
+  trajectory_optimization_runtime_ = 0;
+  overall_runtime_ = 0;
+
+
+  if (!initialized_)
+  {
+    SendInitialWaypoint();
+    start_time_ = ros::Time::now();
+    global_direction_switch_time_ = ros::Time::now();
+    return;
+  }
+
+  overall_processing_timer.Start();
+  if (keypose_cloud_update_)
+  {
+    keypose_cloud_update_ = false;
+
+    CountDirectionChange();
+
+    misc_utils_ns::Timer update_representation_timer("update representation");
+    update_representation_timer.Start();
+
+    // Update grid world
+    UpdateGlobalRepresentation();
+
+    int viewpoint_candidate_count = UpdateViewPoints();
+    if (viewpoint_candidate_count == 0)
+    {
+      ROS_WARN("Cannot get candidate viewpoints, skipping this round");
+      return;
+    }
+
+    UpdateKeyposeGraph();
+
+    int uncovered_point_num = 0;
+    int uncovered_frontier_point_num = 0;
+    if (!exploration_finished_ || !pp_.kNoExplorationReturnHome)
+    {
+      UpdateViewPointCoverage();
+      UpdateCoveredAreas(uncovered_point_num, uncovered_frontier_point_num);
+    }
+    else
+    {
+      pd_.viewpoint_manager_->ResetViewPointCoverage();
+    }
+
+    update_representation_timer.Stop(false);
+    update_representation_runtime_ += update_representation_timer.GetDuration("ms");
+
+    // Global TSP
+    std::vector<int> global_cell_tsp_order;
+    exploration_path_ns::ExplorationPath global_path;
+    GlobalPlanning(global_cell_tsp_order, global_path);
+
+    // Local TSP
+    exploration_path_ns::ExplorationPath local_path;
+    LocalPlanning(uncovered_point_num, uncovered_frontier_point_num, global_path, local_path);
+
+    near_home_ = GetRobotToHomeDistance() < pp_.kRushHomeDist;
+    at_home_ = GetRobotToHomeDistance() < pp_.kAtHomeDistThreshold;
+
+    if (pd_.grid_world_->IsReturningHome() && pd_.local_coverage_planner_->IsLocalCoverageComplete() &&
+        (ros::Time::now() - start_time_).toSec() > 5)
+    {
+      if (!exploration_finished_)
+      {
+        PrintExplorationStatus("Exploration completed, returning home", false);
+      }
+      exploration_finished_ = true;
+    }
+
+    if (exploration_finished_ && at_home_ && !stopped_)
+    {
+      PrintExplorationStatus("Return home completed", false);
+      stopped_ = true;
+    }
+
+    pd_.exploration_path_ = ConcatenateGlobalLocalPath(global_path, local_path);
+
+    PublishExplorationState();
+
+    lookahead_point_update_ = GetLookAheadPoint(pd_.exploration_path_, global_path, pd_.lookahead_point_);
+    PublishWaypoint();
+
+    overall_processing_timer.Stop(false);
+    overall_runtime_ = overall_processing_timer.GetDuration("ms");
+
+    pd_.visualizer_->GetGlobalSubspaceMarker(pd_.grid_world_, global_cell_tsp_order);
+    Eigen::Vector3d viewpoint_origin = pd_.viewpoint_manager_->GetOrigin();
+    pd_.visualizer_->GetLocalPlanningHorizonMarker(viewpoint_origin.x(), viewpoint_origin.y(), pd_.robot_position_.z);
+    pd_.visualizer_->PublishMarkers();
+
+    PublishLocalPlanningVisualization(local_path);
+    PublishGlobalPlanningVisualization(global_path, local_path);
+    PublishRuntime();
+  }
+}
+}  // namespace sensor_coverage_planner_3d_ns
+
+```
 
