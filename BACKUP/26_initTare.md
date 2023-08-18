@@ -138,6 +138,20 @@ void SensorCoveragePlanner3D::StateEstimationCallback(const nav_msgs::Odometry::
 }
 ```
 
+**第六个函数**`\coverage_boundary`,谜之操作看不懂
+
+```C++
+void SensorCoveragePlanner3D::CoverageBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg)
+{
+  pd_.planning_env_->UpdateCoverageBoundary((*polygon_msg).polygon);
+}
+..................................
+inline void UpdateCoverageBoundary(const geometry_msgs::Polygon& polygon)
+  {
+    coverage_boundary_ = polygon;
+  }
+```
+
 
 
 
