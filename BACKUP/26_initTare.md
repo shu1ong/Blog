@@ -152,7 +152,7 @@ inline void UpdateCoverageBoundary(const geometry_msgs::Polygon& polygon)
   }
 ```
 
-**第七个函数**  `NogoBoundaryCallback`订阅的话题为`/nogo_boundary`(怎么感觉没有见过)
+**第七个函数**  `NogoBoundaryCallback`订阅的话题为`/nogo_boundary`(怎么感觉没有见过) 应该是在navigation——bondary使用在rviz显示小车行驶边界的topic
 
 ```c++
 void SensorCoveragePlanner3D::NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg)
