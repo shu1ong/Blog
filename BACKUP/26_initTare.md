@@ -152,6 +152,63 @@ inline void UpdateCoverageBoundary(const geometry_msgs::Polygon& polygon)
   }
 ```
 
+**第七个函数**  `NogoBoundaryCallback`订阅的话题为`/nogo_boundary`(怎么感觉没有见过)
+
+```c++
+void SensorCoveragePlanner3D::NogoBoundaryCallback(const geometry_msgs::PolygonStampedConstPtr& polygon_msg)
+{
+  if (polygon_msg->polygon.points.empty())
+  {
+    return;
+  }
+  double polygon_id = polygon_msg->polygon.points[0].z;
+  int polygon_point_size = polygon_msg->polygon.points.size();
+  std::vector<geometry_msgs::Polygon> nogo_boundary;
+  geometry_msgs::Polygon polygon;
+  for (int i = 0; i < polygon_point_size; i++)
+  {
+    if (polygon_msg->polygon.points[i].z == polygon_id)
+    {
+      polygon.points.push_back(polygon_msg->polygon.points[i]);
+    }
+    else
+    {
+      nogo_boundary.push_back(polygon);
+      polygon.points.clear();
+      polygon_id = polygon_msg->polygon.points[i].z;
+      polygon.points.push_back(polygon_msg->polygon.points[i]);
+    }
+  }
+  nogo_boundary.push_back(polygon);
+  pd_.viewpoint_manager_->UpdateNogoBoundary(nogo_boundary);
+
+  geometry_msgs::Point point;
+  for (int i = 0; i < nogo_boundary.size(); i++)
+  {
+    for (int j = 0; j < nogo_boundary[i].points.size() - 1; j++)
+    {
+      point.x = nogo_boundary[i].points[j].x;
+      point.y = nogo_boundary[i].points[j].y;
+      point.z = nogo_boundary[i].points[j].z;
+      pd_.nogo_boundary_marker_->marker_.points.push_back(point);
+      point.x = nogo_boundary[i].points[j + 1].x;
+      point.y = nogo_boundary[i].points[j + 1].y;
+      point.z = nogo_boundary[i].points[j + 1].z;
+      pd_.nogo_boundary_marker_->marker_.points.push_back(point);
+    }
+    point.x = nogo_boundary[i].points.back().x;
+    point.y = nogo_boundary[i].points.back().y;
+    point.z = nogo_boundary[i].points.back().z;
+    pd_.nogo_boundary_marker_->marker_.points.push_back(point);
+    point.x = nogo_boundary[i].points.front().x;
+    point.y = nogo_boundary[i].points.front().y;
+    point.z = nogo_boundary[i].points.front().z;
+    pd_.nogo_boundary_marker_->marker_.points.push_back(point);
+  }
+  pd_.nogo_boundary_marker_->Publish();
+}
+```
+
 
 
 
