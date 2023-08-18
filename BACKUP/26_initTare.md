@@ -91,6 +91,7 @@ void SensorCoveragePlanner3D::RegisteredScanCallback(const sensor_msgs::PointClo
   }
 ```
 第三个`TerrainMapCallback`,对读取到的terrainmap做了简单的类型转化之后进行了过滤:用`intensity`过滤掉了大于`kTerrainCollisionThreshold`的值.
+返回了的点云文件叫做`terrain_collision_cloud_`
 ```C++
 void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg){
   if (pp_.kCheckTerrainCollision){//const true 
