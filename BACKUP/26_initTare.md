@@ -72,7 +72,7 @@ void SensorCoveragePlanner3D::SendInitialWaypoint() {
 
 一个个看:
 
-第一个回调函数`ExplorationStartCallback`,主要用于接受开始信号的.
+**第一个回调函数**`ExplorationStartCallback`,主要用于接受开始信号的.
 ```c++
 void SensorCoveragePlanner3D::ExplorationStartCallback(const std_msgs::Bool::ConstPtr& start_msg)
 {
@@ -82,7 +82,7 @@ void SensorCoveragePlanner3D::ExplorationStartCallback(const std_msgs::Bool::Con
   }
 }
 ```
-第二个函数为`RegisteredScanCallback`,在初始化中被直接跳过了.
+**第二个函数**为`RegisteredScanCallback`,在初始化中被直接跳过了.
 ```c++
 void SensorCoveragePlanner3D::RegisteredScanCallback(const sensor_msgs::PointCloud2ConstPtr& registered_scan_msg)
 {
@@ -90,7 +90,8 @@ void SensorCoveragePlanner3D::RegisteredScanCallback(const sensor_msgs::PointClo
     return;
   }
 ```
-第三个`TerrainMapCallback`,对读取到的terrainmap做了简单的类型转化之后进行了过滤:用`intensity`过滤掉了大于`kTerrainCollisionThreshold`的值.
+**第三个**`TerrainMapCallback`,对读取到的terrainmap做了简单的类型转化之后进行了过滤:用`intensity`过滤掉了大于`kTerrainCollisionThreshold`的值.
+
 返回了的点云文件叫做`terrain_collision_cloud_`
 ```C++
 void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg){
@@ -107,6 +108,9 @@ void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2C
   }
 }
 ```
+**第四个函数**`TerrainMapExtCallback`,这个用来接受广域terrainmap的,用不上暂时略过.
+
+第五个函数
 
 
 
