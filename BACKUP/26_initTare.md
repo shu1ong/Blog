@@ -110,23 +110,24 @@ void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2C
 ```
 **第四个函数**`TerrainMapExtCallback`,与上一个函数基本相同,这个用来接受广域terrainmap的,用不上暂时略过.
 
-**第五个函数**`StateEstimationCallback`,
+**第五个函数**`StateEstimationCallback`,从话题`state_estimation`中获取当前小车的位姿信息.**将`initialized_`赋值为true**
 ```c++
 void SensorCoveragePlanner3D::StateEstimationCallback(const nav_msgs::Odometry::ConstPtr& state_estimation_msg) {
-  pd_.robot_position_ = state_estimation_msg->pose.pose.position;
+  pd_.robot_position_ = state_estimation_msg->pose.pose.position;//这里初始化为0,此刻被赋传感器的真值(一般是经过slam计算得到后的值)
   // Todo: use a boolean
   if (std::abs(pd_.initial_position_.x()) < 0.01 && std::abs(pd_.initial_position_.y()) < 0.01 && std::abs(pd_.initial_position_.z()) < 0.01) {
-    pd_.initial_position_.x() = pd_.robot_position_.x;// = 0
-    pd_.initial_position_.y() = pd_.robot_position_.y;// = 0
-    pd_.initial_position_.z() = pd_.robot_position_.z;// = 0
+    pd_.initial_position_.x() = pd_.robot_position_.x;
+    pd_.initial_position_.y() = pd_.robot_position_.y;
+    pd_.initial_position_.z() = pd_.robot_position_.z;
   }
   
+  //将四元数转化为RPY的格式
   double roll, pitch, yaw;
   geometry_msgs::Quaternion geo_quat = state_estimation_msg->pose.pose.orientation;
   tf::Matrix3x3(tf::Quaternion(geo_quat.x, geo_quat.y, geo_quat.z, geo_quat.w)).getRPY(roll, pitch, yaw);
 
   pd_.robot_yaw_ = yaw;
-
+  //小车的前进判断
   if (state_estimation_msg->twist.twist.linear.x > 0.4) {
     pd_.moving_forward_ = true;
   }
