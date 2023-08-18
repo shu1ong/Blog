@@ -90,6 +90,21 @@ void SensorCoveragePlanner3D::RegisteredScanCallback(const sensor_msgs::PointClo
     return;
   }
 ```
+第三个`TerrainMapCallback`
+```C++
+void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg){
+  if (pp_.kCheckTerrainCollision){//const true 
+    pcl::PointCloud<pcl::PointXYZI>::Ptr terrain_map_tmp(new pcl::PointCloud<pcl::PointXYZI>());
+    pcl::fromROSMsg<pcl::PointXYZI>(*terrain_map_msg, *terrain_map_tmp);
+    pd_.terrain_collision_cloud_->cloud_->clear();
+    for (auto& point : terrain_map_tmp->points){
+      if (point.intensity > pp_.kTerrainCollisionThreshold) {
+        pd_.terrain_collision_cloud_->cloud_->points.push_back(point);
+      }
+    }
+  }
+}
+```
 
 
 
