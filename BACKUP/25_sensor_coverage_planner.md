@@ -102,6 +102,17 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
   pd_.Initialize(nh, nh_p);
 
 ```
+关于位置初始化
+```c
+void PlannerData::Initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p){
+  ...
+  robot_position_.x = 0;
+  robot_position_.y = 0;
+  robot_position_.z = 0;
+
+  last_robot_position_ = robot_position_;
+}
+```
 然后这两句也整不明白
 ```c
   pd_.keypose_graph_->SetAllowVerticalEdge(false);
@@ -115,48 +126,36 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
   ```
   接着进行相关话题的订阅,并执行相应的句柄函数.
   ```c
-  //` subscribe topic
   exploration_start_sub_    =  nh.subscribe(pp_.sub_start_exploration_topic_, 5, &SensorCoveragePlanner3D::ExplorationStartCallback, this); //` no publisher
   registered_scan_sub_      =  nh.subscribe(pp_.sub_registered_scan_topic_, 5, &SensorCoveragePlanner3D::RegisteredScanCallback, this);
-  terrain_map_sub_          =  nh.subscribe(pp_.sub_terrain_map_topic_, 5, &SensorCoveragePlanner3D::TerrainMapCallback, this);
-  terrain_map_ext_sub_      =  nh.subscribe(pp_.sub_terrain_map_ext_topic_, 5, &SensorCoveragePlanner3D::TerrainMapExtCallback, this);
-  state_estimation_sub_     =  nh.subscribe(pp_.sub_state_estimation_topic_, 5, &SensorCoveragePlanner3D::StateEstimationCallback, this);
-  coverage_boundary_sub_    =  nh.subscribe(pp_.sub_coverage_boundary_topic_, 1, &SensorCoveragePlanner3D::CoverageBoundaryCallback, this);
-  viewpoint_boundary_sub_   =  nh.subscribe(pp_.sub_viewpoint_boundary_topic_, 1, &SensorCoveragePlanner3D::ViewPointBoundaryCallback, this);
+  ...
   nogo_boundary_sub_        =  nh.subscribe(pp_.sub_nogo_boundary_topic_, 1, &SensorCoveragePlanner3D::NogoBoundaryCallback, this);
   ```
   这里是关于话题发布的部分
   ```c
-  //` establish publisher
   global_path_full_publisher_                = nh.advertise<nav_msgs::Path>("global_path_full", 1);
   global_path_publisher_                     = nh.advertise<nav_msgs::Path>("global_path", 1);
-  old_global_path_publisher_                 = nh.advertise<nav_msgs::Path>("old_global_path", 1);
-  to_nearest_global_subspace_path_publisher_ = nh.advertise<nav_msgs::Path>("to_nearest_global_subspace_path", 1);
-  local_tsp_path_publisher_                  = nh.advertise<nav_msgs::Path>("local_path", 1);
-  exploration_path_publisher_                = nh.advertise<nav_msgs::Path>("exploration_path", 1);
-  waypoint_pub_                              = nh.advertise<geometry_msgs::PointStamped>(pp_.pub_waypoint_topic_, 2);
-  exploration_finish_pub_                    = nh.advertise<std_msgs::Bool>(pp_.pub_exploration_finish_topic_, 2);
-  runtime_breakdown_pub_                     = nh.advertise<std_msgs::Int32MultiArray>(pp_.pub_runtime_breakdown_topic_, 2);
-  runtime_pub_                               = nh.advertise<std_msgs::Float32>(pp_.pub_runtime_topic_, 2);
+  ...
   momentum_activation_count_pub_             = nh.advertise<std_msgs::Int32>(pp_.pub_momentum_activation_count_topic_, 2);
-  // Debug
-  pointcloud_manager_neighbor_cells_origin_pub_ = nh.advertise<geometry_msgs::PointStamped>("pointcloud_manager_neighbor_cells_origin", 1);
+  ...
   return true;
 }
 
 ```
 ## 主函数excute
+
+这里的start信号可以用topic的方式进行发布
 ```c
 void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
 {
-  //star flag the value of the !start_exploration_ =  true 
-  //`if the start signal is needed ,  should have start_exploration_ = true
   if (!pp_.kAutoStart && !start_exploration_)
   {
     ROS_INFO("Waiting for start signal");
     return;
   }
-
+```
+一些bool flag
+```c
   Timer overall_processing_timer("overall processing");
   update_representation_runtime_ = 0;
   local_viewpoint_sampling_runtime_ = 0;
@@ -164,7 +163,9 @@ void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
   global_planning_runtime_ = 0;
   trajectory_optimization_runtime_ = 0;
   overall_runtime_ = 0;
-
+```
+当没有进行初始化的时候进行初始化
+```c
 
   if (!initialized_)
   {
@@ -173,7 +174,29 @@ void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
     global_direction_switch_time_ = ros::Time::now();
     return;
   }
+```
+主要是对waypoint的初始化
+```c
+void SensorCoveragePlanner3D::SendInitialWaypoint()
+{
+  // lx ly only determine the dir of the start which will update later
+  double lx = 12.0;
+  double ly = 0.0;
+  //从车体坐标系到世界坐标系下,waypoint初始化始终是在小车的行驶方向的正前方,需要投影到世界坐标下去计算其绝对坐标
+  double dx = cos(pd_.robot_yaw_) * lx - sin(pd_.robot_yaw_) * ly;
+  double dy = sin(pd_.robot_yaw_) * lx + cos(pd_.robot_yaw_) * ly;
 
+  geometry_msgs::PointStamped waypoint;
+  waypoint.header.frame_id = "map";
+  waypoint.header.stamp = ros::Time::now();
+  waypoint.point.x = pd_.robot_position_.x + dx;
+  waypoint.point.y = pd_.robot_position_.y + dy;
+  waypoint.point.z = pd_.robot_position_.z;
+  waypoint_pub_.publish(waypoint);
+}
+```
+
+```c
   overall_processing_timer.Start();
   if (keypose_cloud_update_)
   {
