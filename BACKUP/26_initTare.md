@@ -90,11 +90,12 @@ void SensorCoveragePlanner3D::RegisteredScanCallback(const sensor_msgs::PointClo
     return;
   }
 ```
-第三个`TerrainMapCallback`
+第三个`TerrainMapCallback`,对读取到的terrainmap做了简单的类型转化之后进行了过滤:用`intensity`过滤掉了大于`kTerrainCollisionThreshold`的值.
 ```C++
 void SensorCoveragePlanner3D::TerrainMapCallback(const sensor_msgs::PointCloud2ConstPtr& terrain_map_msg){
   if (pp_.kCheckTerrainCollision){//const true 
     pcl::PointCloud<pcl::PointXYZI>::Ptr terrain_map_tmp(new pcl::PointCloud<pcl::PointXYZI>());
+    //这里是把前者的信息转换为后者
     pcl::fromROSMsg<pcl::PointXYZI>(*terrain_map_msg, *terrain_map_tmp);
     pd_.terrain_collision_cloud_->cloud_->clear();
     for (auto& point : terrain_map_tmp->points){
