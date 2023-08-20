@@ -5,5 +5,5 @@
 在路径`usr/bin`下找到你的google文件，使用sudo权限进行修改
 在最后加上
 ```bash
---no-sandbox
+--user-data-dir --no-sandbox
 ```
