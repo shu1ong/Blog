@@ -113,7 +113,7 @@ int ViewPointManager::GetViewPointCandidate()
 
 首先是`ViewPointInCollision`，其主要是使用了对于该点的index索引，然后调用相应的功能函数，判断点是否有碰撞？
 
-- [] viewpoints_ 装的数据类型因该是每个点的位置表达（绝对位置）positionXYZ
+- [ ] viewpoints_ 装的数据类型因该是每个点的位置表达（绝对位置）positionXYZ
 
 前提是viewpoint是满足`InRange`的，**表明`InRange`主要是判断点是否和周围的环境点云干涉的**
 
