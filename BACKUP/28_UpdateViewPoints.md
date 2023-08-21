@@ -44,3 +44,8 @@ int SensorCoveragePlanner3D::UpdateViewPoints()
 }
 ```
 
+
+接下来分析选点的函数`GetViewPointCandidate`
+
+
+
