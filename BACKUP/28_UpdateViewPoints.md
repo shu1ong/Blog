@@ -104,3 +104,51 @@ int ViewPointManager::GetViewPointCandidate()
 ```
 
 
+其中比较重要的就是这条判断的条件语句：
+```c++
+!ViewPointInCollision(i) && ViewPointInLineOfSight(i) && ViewPointConnected(i)
+```
+
+对于涉及到的函数进行分别分析,
+
+首先是`ViewPointInCollision`，其主要是使用了对于该点的index索引，然后调用相应的功能函数，判断点是否有碰撞？
+
+- [] viewpoints_ 装的数据类型因该是每个点的位置表达（绝对位置）positionXYZ
+
+前提是viewpoint是满足`InRange`的，**表明`InRange`主要是判断点是否和周围的环境点云干涉的**
+
+判断的依据是当前点的height与position的插值需要小于x或y轴的两倍最大分辨率（这里应该主要是对纵向空间的裁减和限制）
+
+```C++
+bool ViewPointManager::ViewPointInCollision(int viewpoint_ind, bool use_array_ind)
+{
+  int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
+  return viewpoints_[array_ind].InCollision();
+}
+...
+bool ViewPointManager::InCollision(const Eigen::Vector3d& position)
+{
+  int viewpoint_ind = GetViewPointInd(position);
+  bool node_in_collision = false;
+  if (InRange(viewpoint_ind) &&
+      std::abs(GetViewPointHeight(viewpoint_ind) - position.z()) < std::max(vp_.kResolution.x(), vp_.kResolution.y()) * 2) {
+    if (ViewPointInCollision(viewpoint_ind))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+```
+
+关于分辨率的问题主要在yaml的配置文件中进行配置，一同配置的还有点的个数
+```yaml
+viewpoint_manager/number_x : 40
+viewpoint_manager/number_y : 40
+viewpoint_manager/number_z : 1
+viewpoint_manager/resolution_x : 1.2
+viewpoint_manager/resolution_y : 1.2
+viewpoint_manager/resolution_z : 0.0
+```
+x = 4.8m y = 4.8m z = 0 感觉所划分的区域为local的区域
