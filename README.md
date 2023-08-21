@@ -5,7 +5,7 @@ My personal blog using issues and GitHub Actions (随意转载，无需署名)
 | Name | Link | Desc | 
  | ---- | ---- | ---- |
 ## 最近更新
-- [viewpointCandidate](https://github.com/shu1ong/gitblog/issues/28)--2023-08-21
+- [UpdateViewPoints](https://github.com/shu1ong/gitblog/issues/28)--2023-08-21
 - [initTare](https://github.com/shu1ong/gitblog/issues/26)--2023-08-18
 - [sensor_coverage_planner](https://github.com/shu1ong/gitblog/issues/25)--2023-08-17
 - [log](https://github.com/shu1ong/gitblog/issues/24)--2023-08-17
