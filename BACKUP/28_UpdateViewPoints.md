@@ -113,6 +113,8 @@ int ViewPointManager::GetViewPointCandidate()
 
 对于涉及到的函数进行分别分析,
 
+发现之后的函数主要是对与已经操作的值进行返回（已经对点判断并把相应的值存在了对应的属性中[viewpoint_]）
+
 ### ViewPointInCollision
 
 首先是`ViewPointInCollision`，其主要是使用了对于该点的index索引，然后调用相应的功能函数，判断点是否有碰撞？
