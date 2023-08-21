@@ -1,5 +1,7 @@
 # [UpdateViewPoints](https://github.com/shu1ong/gitblog/issues/28)
 
+## UpdateViewPoints
+
 关于vierwpoint的生成和选取基本上可以确定其调用过程是通过主函数中`UpdateViewPoints`实现的
 
 这里是对点云文件的一些处理
@@ -44,7 +46,7 @@ int SensorCoveragePlanner3D::UpdateViewPoints()
 }
 ```
 
-
+## GetViewPointCandidate
 接下来分析选点的函数`GetViewPointCandidate`
 
 
@@ -104,12 +106,14 @@ int ViewPointManager::GetViewPointCandidate()
 ```
 
 
-其中比较重要的就是这条判断的条件语句：
+## 其中比较重要的就是这条判断的条件语句：
 ```c++
 !ViewPointInCollision(i) && ViewPointInLineOfSight(i) && ViewPointConnected(i)
 ```
 
 对于涉及到的函数进行分别分析,
+
+### ViewPointInCollision
 
 首先是`ViewPointInCollision`，其主要是使用了对于该点的index索引，然后调用相应的功能函数，判断点是否有碰撞？
 
@@ -152,3 +156,4 @@ viewpoint_manager/resolution_y : 1.2
 viewpoint_manager/resolution_z : 0.0
 ```
 x = 4.8m y = 4.8m z = 0 感觉所划分的区域为local的区域
+
