@@ -3,6 +3,7 @@
 # inti
 ### 直接进主函数，节点的初始化
 
+$`\alpha`$
 ```c++
 int main(int argc, char** argv)
 {
