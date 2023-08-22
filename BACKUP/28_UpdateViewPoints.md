@@ -107,12 +107,121 @@ void ViewPointManager::CheckViewPointCollisionWithCollisionGrid(const pcl::Point
   }
 }
 ```
-
-
 #### `heckViewPointBoundaryCollision()`
+```c++
+void ViewPointManager::CheckViewPointBoundaryCollision()
+{
+  // Check for the polygon boundary and nogo zones
+  for (int i = 0; i < vp_.kViewPointNumber; i++)
+  {
+    geometry_msgs::Point viewpoint_position = GetViewPointPosition(i, true);
+    if ((!viewpoint_boundary_.points.empty() &&
+         !misc_utils_ns::PointInPolygon(viewpoint_position, viewpoint_boundary_)))
+    {
+      SetViewPointCollision(i, true, true);
+      continue;
+    }
+    for (int j = 0; j < nogo_boundary_.size(); j++)
+    {
+      if (!nogo_boundary_[j].points.empty() && misc_utils_ns::PointInPolygon(viewpoint_position, nogo_boundary_[j]))
+      {
+        SetViewPointCollision(i, true, true);
 
+        break;
+      }
+    }
+  }
+}
+```
 
 ### `CheckViewPointLineOfSight()`
+```c++
+void ViewPointManager::CheckViewPointLineOfSight()
+{
+  if (!initialized_)
+    return;
+
+  for (int i = 0; i < viewpoints_.size(); i++)
+  {
+    SetViewPointInCurrentFrameLineOfSight(i, false, true); //set the value to false
+  }
+
+  Eigen::Vector3i robot_sub = GetViewPointSub(robot_position_);
+  MY_ASSERT(grid_->InRange(robot_sub));
+  int robot_viewpoint_ind = grid_->Sub2Ind(robot_sub);
+  
+  //init the property
+  //false means the ind has not get need to use function to claculate
+  // 其默认值为false void SetViewPointInLineOfSight(int viewpoint_ind, bool in_line_of_sight, bool use_array_ind = false);
+  
+  SetViewPointInLineOfSight(robot_viewpoint_ind, true);
+  SetViewPointInCurrentFrameLineOfSight(robot_viewpoint_ind, true);
+
+  std::vector<bool> checked(vp_.kViewPointNumber, false);
+  std::vector<Eigen::Vector3i> ray_cast_cells;
+  Eigen::Vector3i max_sub(vp_.kNumber.x() - 1, vp_.kNumber.y() - 1, vp_.kNumber.z() - 1);
+  Eigen::Vector3i min_sub(0, 0, 0);
+
+  int x_indices[2] = { 0, vp_.kNumber.x() - 1 };//总共只有两个数
+  int y_indices[2] = { 0, vp_.kNumber.y() - 1 };
+  int z_indices[2] = { 0, vp_.kNumber.z() - 1 };
+
+  for (int xi = 0; xi < 2; xi++)
+  {
+    for (int y = 0; y < vp_.kNumber.y(); y++)
+    {
+      for (int z = 0; z < vp_.kNumber.z(); z++)
+      {
+        int x = x_indices[xi];
+        Eigen::Vector3i end_sub(x, y, z);//端点
+        int array_ind = grid_->GetArrayInd(end_sub);
+        if (!checked[array_ind])
+        {
+          CheckViewPointLineOfSightHelper(robot_sub, end_sub, max_sub, min_sub);
+          checked[array_ind] = true;
+        }
+      }
+    }
+  }
+
+  for (int x = 0; x < vp_.kNumber.x(); x++)
+  {
+    for (int yi = 0; yi < 2; yi++)
+    {
+      for (int z = 0; z < vp_.kNumber.z(); z++)
+      {
+        int y = y_indices[yi];
+        Eigen::Vector3i end_sub(x, y, z);
+        int array_ind = grid_->GetArrayInd(end_sub);
+        if (!checked[array_ind])
+        {
+          CheckViewPointLineOfSightHelper(robot_sub, end_sub, max_sub, min_sub);
+          checked[array_ind] = true;
+        }
+      }
+    }
+  }
+
+  for (int x = 0; x < vp_.kNumber.x(); x++)
+  {
+    for (int y = 0; y < vp_.kNumber.y(); y++)
+    {
+      for (int zi = 0; zi < 2; zi++)
+      {
+        int z = z_indices[zi];
+        Eigen::Vector3i end_sub(x, y, z);
+        int array_ind = grid_->GetArrayInd(end_sub);
+        if (!checked[array_ind])
+        {
+          CheckViewPointLineOfSightHelper(robot_sub, end_sub, max_sub, min_sub);
+          checked[array_ind] = true;
+        }
+      }
+    }
+  }
+}
+
+```
 
 ### `CheckViewPointConnectivity()`
 
