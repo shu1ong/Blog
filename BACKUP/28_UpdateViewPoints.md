@@ -1,5 +1,11 @@
 # [UpdateViewPoints](https://github.com/shu1ong/gitblog/issues/28)
 
+- [UpdateViewPoints](#updateviewpoints)
+- [GetViewPointCandidate](#getviewpointcandidate)
+- [其中比较重要的就是这条判断的条件语句：](#其中比较重要的就是这条判断的条件语句)
+  - [`CheckViewPointCollision()`](#checkviewpointcollision)
+
+
 ## UpdateViewPoints
 
 关于vierwpoint的生成和选取基本上可以确定其调用过程是通过主函数中`UpdateViewPoints`实现的
@@ -110,61 +116,27 @@ int ViewPointManager::GetViewPointCandidate()
 ```c++
 !ViewPointInCollision(i) && ViewPointInLineOfSight(i) && ViewPointConnected(i)
 ```
+发现之后的函数主要是对与已经操作的值进行返回（已经对点判断并把相应的值存在了对应的属性中[viewpoint_]）
+
+三个对应的函数分别是
+
+- [CheckViewPointCollision()](#`CheckViewPointCollision()`)
+
+`CheckViewPointLineOfSight()` 
+
+`CheckViewPointConnectivity()`
+
+
+```c++
+void ViewPointManager::CheckViewPointCollision(const pcl::PointCloud<pcl::PointXYZI>::Ptr& collision_cloud) {
+  CheckViewPointCollisionWithCollisionGrid(collision_cloud);
+  CheckViewPointBoundaryCollision();
+}
+
+
+```
 
 对于涉及到的函数进行分别分析,
 
-发现之后的函数主要是对与已经操作的值进行返回（已经对点判断并把相应的值存在了对应的属性中[viewpoint_]）
 
-### ViewPointInCollision
-
-首先是`ViewPointInCollision`，其主要是使用了对于该点的index索引，然后调用相应的功能函数，判断点是否有碰撞？
-
-- [ ] viewpoints_ 装的数据类型因该是每个点的位置表达（绝对位置）positionXYZ
-
-```C++
-bool ViewPointManager::ViewPointInCollision(int viewpoint_ind, bool use_array_ind)
-{
-  int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
-  return viewpoints_[array_ind].InCollision();
-}
-...
-bool InCollision() const
-{
-  return in_collision_;
-}
-
-```
-
-### ViewPointInLineOfSight
-
-- [ ] 比较奇怪的是，这里的并不是一个用作判断的bool函数，仅仅只是return了一个值的调用，这里的数据结构也怪怪的，因为按理来说这里的值不是数组没有储存每个节点viewpoint的信息
-
-这里`in_line_of_sight_`由另一个函数决定`SetInLineOfSight`，但其调用在函数`GetLookAheadPoint`中，那之后再另作分析
-```c++
-bool ViewPointManager::ViewPointInLineOfSight(int viewpoint_ind, bool use_array_ind)
-{
-  int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
-  return viewpoints_[array_ind].InLineOfSight();
-}
-
-...
-
-bool InLineOfSight() const
-  {
-    return in_line_of_sight_;
-  }
-```
-
-### ViewPointConnected
-
-```c++
-bool ViewPointManager::ViewPointConnected(int viewpoint_ind, bool use_array_ind)
-{
-  int array_ind = GetViewPointArrayInd(viewpoint_ind, use_array_ind);
-  return viewpoints_[array_ind].Connected();
-}
-
-.....
-
-
-```
+### `CheckViewPointCollision()`
