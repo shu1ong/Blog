@@ -171,7 +171,8 @@ void ViewPointManager::CheckViewPointLineOfSight()
   int x_indices[2] = { 0, vp_.kNumber.x() - 1 };//总共只有两个数
   int y_indices[2] = { 0, vp_.kNumber.y() - 1 };
   int z_indices[2] = { 0, vp_.kNumber.z() - 1 };
-
+  
+  //x = o 和 x = end 两个端面上所有的点
   for (int xi = 0; xi < 2; xi++)
   {
     for (int y = 0; y < vp_.kNumber.y(); y++)
@@ -190,6 +191,7 @@ void ViewPointManager::CheckViewPointLineOfSight()
     }
   }
 
+  //y = 0 和 y = y.end 两个端面上所有的点
   for (int x = 0; x < vp_.kNumber.x(); x++)
   {
     for (int yi = 0; yi < 2; yi++)
@@ -208,6 +210,7 @@ void ViewPointManager::CheckViewPointLineOfSight()
     }
   }
 
+  //z = 0 and z = z.end上所有的点
   for (int x = 0; x < vp_.kNumber.x(); x++)
   {
     for (int y = 0; y < vp_.kNumber.y(); y++)
@@ -228,6 +231,7 @@ void ViewPointManager::CheckViewPointLineOfSight()
 }
 
 ```
+- [ ] 其中重要的判断函数为`CheckViewPointLineOfSightHelper`
 
 ### `CheckViewPointConnectivity()`
 
