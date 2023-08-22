@@ -406,7 +406,7 @@ for (int i = 0; i < 36 * pathNum; i++) {
             if (penaltyScore < costScore) penaltyScore = costScore;c
 ```
 
-$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore $
+$` score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore `$
 这里$rotDirW^{4}$的原因是会有+-90的值，取绝对值。
 
 此处的score越小，则代表cost越小。求最小的score即可。
