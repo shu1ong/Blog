@@ -1,16 +1,20 @@
 # [UpdateViewPoints](https://github.com/shu1ong/gitblog/issues/28)
 
 - [UpdateViewPoints](#updateviewpoints)
+  - [`CheckViewPointCollision()`](#checkviewpointcollision)
+    - [`CheckViewPointCollisionWithCollisionGrid()`](#checkviewpointcollisionwithcollisiongrid)
+    - [`heckViewPointBoundaryCollision()`](#heckviewpointboundarycollision)
+  - [`CheckViewPointLineOfSight()`](#checkviewpointlineofsight)
+  - [`CheckViewPointConnectivity()`](#checkviewpointconnectivity)
 - [GetViewPointCandidate](#getviewpointcandidate)
 - [其中比较重要的就是这条判断的条件语句：](#其中比较重要的就是这条判断的条件语句)
-  - [`CheckViewPointCollision()`](#checkviewpointcollision)
 
 
 ## UpdateViewPoints
 
 关于vierwpoint的生成和选取基本上可以确定其调用过程是通过主函数中`UpdateViewPoints`实现的
 
-这里是对点云文件的一些处理
+这里是对点云文件进行一个拼接
 ```C++
 int SensorCoveragePlanner3D::UpdateViewPoints()
 {
@@ -25,11 +29,102 @@ int SensorCoveragePlanner3D::UpdateViewPoints()
     *(pd_.collision_cloud_->cloud_) += *(pd_.terrain_collision_cloud_->cloud_);
     *(pd_.collision_cloud_->cloud_) += *(pd_.terrain_ext_collision_cloud_->cloud_);
   }
+  ```
+然后把拼接过后的点云文件进行筛选，一共使用了三个函数对其进行筛选
+  ```c++
   pd_.viewpoint_manager_->CheckViewPointCollision(pd_.collision_cloud_->cloud_);
   pd_.viewpoint_manager_->CheckViewPointLineOfSight();
   pd_.viewpoint_manager_->CheckViewPointConnectivity();
   ```
-然后将对点云文件进行选点的操作
+三个对应的函数分别是
+
+[CheckViewPointCollision()](#CheckViewPointCollision)
+
+[`CheckViewPointLineOfSight()`](#CheckViewPointLineOfSight) 
+
+[`CheckViewPointConnectivity()`](#CheckViewPointConnectivity)
+
+
+对于涉及到的函数进行分别分析,
+
+### `CheckViewPointCollision()`
+
+下面前嵌套了俩个函数，而对于输入的参数`pd_.collision_cloud_`是对terrain map的叠加
+```c++
+void ViewPointManager::CheckViewPointCollision(const pcl::PointCloud<pcl::PointXYZI>::Ptr& collision_cloud)
+{
+  CheckViewPointCollisionWithCollisionGrid(collision_cloud);
+  CheckViewPointBoundaryCollision();
+}
+```
+#### `CheckViewPointCollisionWithCollisionGrid()`
+```c++
+void ViewPointManager::CheckViewPointCollisionWithCollisionGrid(const pcl::PointCloud<pcl::PointXYZI>::Ptr& collision_cloud) {
+  //将collion属性全部初始化为true,因为点云本来就是collision cloud
+  for (int i = 0; i < viewpoints_.size(); i++) {
+    if (ViewPointInCollision(i, true)) {
+      AddViewPointCollisionFrameCount(i, true);
+    }
+  }
+  //设置cell的原点
+  std::fill(collision_point_count_.begin(), collision_point_count_.end(), 0);
+  collision_grid_origin_ = origin_ - Eigen::Vector3d::Ones() * vp_.kViewPointCollisionMargin; // ???设置原点
+  collision_grid_->SetOrigin(collision_grid_origin_);
+  //遍历点云中的每一个点
+  for (const auto& point : collision_cloud->points)
+  {
+    //首先获取其xyz坐标，转化为下标式的格式（从离散点转化为grid空间中的连续表达）
+    Eigen::Vector3i collision_grid_sub = collision_grid_->Pos2Sub(point.x, point.y, point.z);//这里是对所有的点进行操作？
+    //return ind >= 0 && ind < cell_number_; InRange指的是在local terrain range
+    //grid坐标以分辨率和grid数量进行构建
+    if (collision_grid_->InRange(collision_grid_sub))
+    {
+      //将gird坐标再转化成按序列排布的ind
+      int collision_grid_ind = collision_grid_->Sub2Ind(collision_grid_sub);
+      collision_point_count_[collision_grid_ind]++;
+      //当一个grid中点的个数超过一定限制后
+      if (collision_point_count_[collision_grid_ind] >= vp_.kCollisionPointThr)
+      {
+        //返回该cell的序列
+        std::vector<int> collision_viewpoint_indices = collision_grid_->GetCellValue(collision_grid_ind);
+        //这里虽然getCellValue返回来只有一个值，但是必须和cell的类型进行匹配，所以给了一个Vector的向量，因此当需要提取这个值的时候必须使用遍历
+        for (int i = 0; i < collision_viewpoint_indices.size(); i++)
+        {
+          int viewpoint_ind = collision_viewpoint_indices[i];
+          MY_ASSERT(viewpoint_ind >= 0 && viewpoint_ind < vp_.kViewPointNumber);
+          double z_diff = point.z - GetViewPointHeight(viewpoint_ind);
+          if ((z_diff >= 0 && z_diff <= vp_.kViewPointCollisionMarginZPlus) ||
+              (z_diff < 0 && z_diff >= -vp_.kViewPointCollisionMarginZMinus))
+          {
+            //将与点云干涉的点进行标记
+            SetViewPointCollision(viewpoint_ind, true);
+            //那些被抠掉的节点的FrameCount参数置false（0）
+            ResetViewPointCollisionFrameCount(viewpoint_ind);
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+
+#### `heckViewPointBoundaryCollision()`
+
+
+### `CheckViewPointLineOfSight()`
+
+### `CheckViewPointConnectivity()`
+
+
+
+
+
+
+
+
+---
+
 ```c++
   //!get viewpoint candidate
   int viewpoint_candidate_count = pd_.viewpoint_manager_->GetViewPointCandidate();
@@ -52,6 +147,8 @@ int SensorCoveragePlanner3D::UpdateViewPoints()
 }
 ```
 
+
+---
 ## GetViewPointCandidate
 接下来分析选点的函数`GetViewPointCandidate`
 
@@ -117,26 +214,3 @@ int ViewPointManager::GetViewPointCandidate()
 !ViewPointInCollision(i) && ViewPointInLineOfSight(i) && ViewPointConnected(i)
 ```
 发现之后的函数主要是对与已经操作的值进行返回（已经对点判断并把相应的值存在了对应的属性中[viewpoint_]）
-
-三个对应的函数分别是
-
-- [CheckViewPointCollision()](#`CheckViewPointCollision()`)
-
-`CheckViewPointLineOfSight()` 
-
-`CheckViewPointConnectivity()`
-
-
-```c++
-void ViewPointManager::CheckViewPointCollision(const pcl::PointCloud<pcl::PointXYZI>::Ptr& collision_cloud) {
-  CheckViewPointCollisionWithCollisionGrid(collision_cloud);
-  CheckViewPointBoundaryCollision();
-}
-
-
-```
-
-对于涉及到的函数进行分别分析,
-
-
-### `CheckViewPointCollision()`
