@@ -415,7 +415,7 @@ $ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times pe
 
 其取值的范围为[0,9]
 
-$ dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0)) $
+$dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0))$
 
 而dirDiff则是每条path在得分中的权重项，得分的高低与path与当前目标点之间的夹角有关，选取夹角尽可能小的路径，会获得更高的score。
 
