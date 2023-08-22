@@ -135,6 +135,12 @@ void ViewPointManager::CheckViewPointBoundaryCollision()
 ```
 
 ### `CheckViewPointLineOfSight()`
+
+整段代码主要的工作是检测Viewpoint有无超出划定的边界，尤其是在plugon boudary进行更新的时候。
+
+分别检测了三种情况，即local区域的6个表面。
+
+- [ ] 比较confusing的是checked的Vector不知道其作用
 ```c++
 void ViewPointManager::CheckViewPointLineOfSight()
 {
