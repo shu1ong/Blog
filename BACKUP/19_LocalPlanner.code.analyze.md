@@ -406,7 +406,7 @@ for (int i = 0; i < 36 * pathNum; i++) {
             if (penaltyScore < costScore) penaltyScore = costScore;c
 ```
 
-$$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore $$
+$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times penaltyScore $
 这里$rotDirW^{4}$的原因是会有+-90的值，取绝对值。
 
 此处的score越小，则代表cost越小。求最小的score即可。
@@ -415,7 +415,7 @@ $$ score = (1 - \sqrt[4]{dirWeight \times dirDiff}) \times rotDirW ^{4} \times p
 
 其取值的范围为[0,9]
 
-$$ dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0)) $$
+$ dirDiff = fabs(joyDir - endDirPathList[i \% pathNum] - (10.0 * rotDir - 180.0)) $
 
 而dirDiff则是每条path在得分中的权重项，得分的高低与path与当前目标点之间的夹角有关，选取夹角尽可能小的路径，会获得更高的score。
 
