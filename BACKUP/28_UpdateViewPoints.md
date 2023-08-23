@@ -235,7 +235,102 @@ void ViewPointManager::CheckViewPointLineOfSight()
 
 ### `CheckViewPointConnectivity()`
 
+检查Viewpoint是否是可到达的，但原理来讲相对粗糙：邻近的9点都不能有碰撞干涉
+```c++
+void ViewPointManager::CheckViewPointConnectivity()
+{
+  if (!initialized_) return;
 
+
+  Eigen::Vector3i robot_sub = GetViewPointSub(robot_position_);
+  MY_ASSERT(grid_->InRange(robot_sub));
+  int robot_ind = grid_->Sub2Ind(robot_sub);
+  int robot_array_ind = grid_->GetArrayInd(robot_sub);
+
+  //先检查及机器人的位置是否与碰撞干涉
+  if (ViewPointInCollision(robot_ind))
+  {
+    // std::cout << "ViewPointManager::CheckViewPointConnectivity: robot in collision" << std::endl;
+    // return;
+    // Find the nearest viewpoint that is not in collision
+    bool found_collision_free_viewpoint = false;
+    double min_dist_to_robot = DBL_MAX;
+
+    //遍历所有ViewPoint（涉及到的ind的操作）
+    for (int i = 0; i < vp_.kViewPointNumber; i++)
+    {
+      int array_ind = grid_->GetArrayInd(i);
+      //是否与障碍物干涉
+      if (!ViewPointInCollision(i))
+      {
+        //获取个点的位置
+        geometry_msgs::Point position = GetViewPointPosition(i);
+        Eigen::Vector3d viewpoint_position(position.x, position.y, position.z);
+        //计算每个点到机器人的距离
+        double dist_to_robot = (viewpoint_position - robot_position_).norm();
+        //找到其中离机器人距离最近的Viewpoint
+        if (dist_to_robot < min_dist_to_robot)
+        { 
+          
+          min_dist_to_robot = dist_to_robot;
+          robot_ind = i;
+          robot_array_ind = array_ind;
+          found_collision_free_viewpoint = true;
+        }
+      }
+    }
+    //没找到则直接退出
+    if (!found_collision_free_viewpoint)
+    {
+      std::cout << "All viewpoints in collision, exisiting" << std::endl;
+      return;
+    }
+  }
+
+  // inti the connected property to false
+  for (auto& viewpoint : viewpoints_)
+  {
+    viewpoint.SetConnected(false);
+  }
+  std::vector<bool> checked(vp_.kViewPointNumber, false);
+  checked[robot_ind] = true;
+  SetViewPointConnected(robot_ind, true);
+  std::list<int> queue;
+  queue.push_back(robot_ind);
+  int connected_viewpoint_count = 1;
+
+  //只要能够找到离robo最近的Viewpoint，且不在障碍物的干涉中
+  while (!queue.empty())
+  {
+    int cur_ind = queue.front();
+    queue.pop_front();
+    //遍历邻近的9个grid，检查是否都在polygon range内
+    for (int i = 0; i < connected_neighbor_indices_[cur_ind].size(); i++)
+    {
+      int neighbor_ind = connected_neighbor_indices_[cur_ind][i];
+      //如果不在
+      if (!grid_->InRange(neighbor_ind))
+      {
+        std::cout << "ViewPointManager::CheckViewPointConnectivity: neighbor ind out of bound" << std::endl;
+        continue;
+      }
+
+      //如果满足要求
+      if (!checked[neighbor_ind] && !ViewPointInCollision(neighbor_ind) && ViewPointInLineOfSight(neighbor_ind))
+      {
+        //当前的这个ViewPoint的高度和周围的高度应该小于一定的阈值，这个差值的大小很大程度上取决于你自己的分表率reselution的设计
+        if (std::abs(GetViewPointHeight(cur_ind) - GetViewPointHeight(neighbor_ind)) < vp_.kConnectivityHeightDiffThr)
+        {
+          SetViewPointConnected(neighbor_ind, true);
+          connected_viewpoint_count++;
+          queue.push_back(neighbor_ind);
+        }
+      }
+      checked[neighbor_ind] = true;
+    }
+  }
+}
+```
 
 
 
