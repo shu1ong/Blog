@@ -5,11 +5,11 @@ My personal blog using issues and GitHub Actions (随意转载，无需署名)
 | Name | Link | Desc | 
  | ---- | ---- | ---- |
 ## 最近更新
+- [record & play of Rosbag ](https://github.com/shu1ong/gitblog/issues/30)--2023-08-28
 - [planner review](https://github.com/shu1ong/gitblog/issues/29)--2023-08-23
 - [UpdateViewPoints](https://github.com/shu1ong/gitblog/issues/28)--2023-08-21
 - [initTare](https://github.com/shu1ong/gitblog/issues/26)--2023-08-18
 - [sensor_coverage_planner](https://github.com/shu1ong/gitblog/issues/25)--2023-08-17
-- [log](https://github.com/shu1ong/gitblog/issues/24)--2023-08-17
 ## Linux skills
 - [Initialize a new catkin WorkSpace](https://github.com/shu1ong/gitblog/issues/18)--2023-08-08
 ## TarePlanner
