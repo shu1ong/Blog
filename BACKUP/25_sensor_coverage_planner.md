@@ -4,11 +4,11 @@
 
 Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch.
 
-其中比较重要的有两段，一段是对`explore.launch`的调用，一段是对`navigationBoundary`pkg的调用。
+其中比较重要的有两段，一段是对`explore.launch`的调用，一段是对`navigationBoundary`pkg的调用，而所有探索参数的配置在`config`文件夹下
 
 前者是launch文件的套用，一般用来满足不同参数的配置.后者是用于进行探索中边界的定义.在demo演示中一般用不上.
 
-这是explore.launch中的重要部分,指明了节点的发布.
+这是explore.launch中的重要部分,指明了节点的发布.与参数配置的路径
 ```xml
     <node pkg="tare_planner" type="tare_planner_node" name="tare_planner_node" output="screen" ns="sensor_coverage_planner">
         <rosparam command="load" file="$(find tare_planner)/config/$(arg scenario).yaml" />
@@ -16,13 +16,8 @@ Tare的程序分析从launch文件开始。这里选择最常用的indoor.launch
 ```
 
 该节点对应的cpp文件在src中去寻找,对应关系描述在cmakelists中
-```c
-add_executable(navigationBoundary src/navigation_boundary_publisher/navigationBoundary.cpp)
-target_link_libraries(navigationBoundary ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
+```c++
 add_executable(tare_planner_node src/tare_planner_node/tare_planner_node.cpp)
-add_dependencies(tare_planner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(tare_planner_node ${catkin_LIBRARIES} sensor_coverage_planner_ground)
 ```
 最后确定到主程序的位置在`tare_planner_node.cpp`中，
 
@@ -88,6 +83,8 @@ SensorCoveragePlanner3D::SensorCoveragePlanner3D(ros::NodeHandle& nh, ros::NodeH
 ```
 ## `initialize`函数的作用
 
+这里的初始化一共分为了两个部分，一个是参数的读取，另一个是对于其他类的重载
+
 首先是参数的读取,主要是一些点云相关的变量以及其匹配对应的话题和一些配置用的bool变量
 ```c
 bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p)
@@ -97,7 +94,8 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
     return false;
   }
 ```
-另外的一个初始化程序. 也是一堆重载的点云文件，暂时跳过.不过里面涉及到了车体的位置初始化.
+在`Initialize`中，主要涉及到就是其他类的重载与点云变量的重载（这里理解为点云变量的声明），而此处重要的是类重载时对于自身构造函数的调用。
+
 ```c
   pd_.Initialize(nh, nh_p);
 

@@ -13,6 +13,5 @@ My personal blog using issues and GitHub Actions (随意转载，无需署名)
 ## Linux skills
 - [Initialize a new catkin WorkSpace](https://github.com/shu1ong/gitblog/issues/18)--2023-08-08
 ## TarePlanner
-- [TerrainAnalysis](https://github.com/shu1ong/gitblog/issues/20)--2023-08-16
 - [LocalPlanner code analyze](https://github.com/shu1ong/gitblog/issues/19)--2023-08-15
 - [Tare planner 实机部署的准备工作](https://github.com/shu1ong/gitblog/issues/17)--2023-08-01
