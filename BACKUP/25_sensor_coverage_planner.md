@@ -96,12 +96,20 @@ bool SensorCoveragePlanner3D::initialize(ros::NodeHandle& nh, ros::NodeHandle& n
 ```
 在`Initialize`中，主要涉及到就是其他类的重载与点云变量的重载（这里理解为点云变量的声明），而此处重要的是类重载时对于自身构造函数的调用。
 
-```c
+```c++
   pd_.Initialize(nh, nh_p);
 
+  planning_env_             = std::make_unique<planning_env_ns::PlanningEnv>(nh, nh_p);
+  viewpoint_manager_        = std::make_shared<viewpoint_manager_ns::ViewPointManager>(nh_p);
+  local_coverage_planner_   = std::make_unique<local_coverage_planner_ns::LocalCoveragePlanner>(nh_p);
+  local_coverage_planner_->SetViewPointManager(viewpoint_manager_);
+  keypose_graph_            = std::make_unique<keypose_graph_ns::KeyposeGraph>(nh_p);
+  grid_world_               = std::make_unique<grid_world_ns::GridWorld>(nh_p);
+  grid_world_->SetUseKeyposeGraph(true);
+  visualizer_               = std::make_unique<tare_visualizer_ns::TAREVisualizer>(nh, nh_p);
 ```
 关于位置初始化
-```c
+```c++
 void PlannerData::Initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p){
   ...
   robot_position_.x = 0;
@@ -111,13 +119,7 @@ void PlannerData::Initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p){
   last_robot_position_ = robot_position_;
 }
 ```
-然后这两句也整不明白
-```c
-  pd_.keypose_graph_->SetAllowVerticalEdge(false);
-  lidar_model_ns::LiDARModel::setCloudDWZResol(pd_.planning_env_->GetPlannerCloudResolution());
-  ```
-  
-  然后终于到了主角出场,这里的timer函数间隔为1s,每隔1s执行一次`excute`这个函数
+然后主角出场,这里的timer函数间隔为1s,每隔1s执行一次`excute`这个函数
   ```c
   //` every second call the execute function(main function) 
   execution_timer_ = nh.createTimer(ros::Duration(1.0), &SensorCoveragePlanner3D::execute, this);
@@ -143,7 +145,7 @@ void PlannerData::Initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_p){
 ## 主函数excute
 
 这里的start信号可以用topic的方式进行发布
-```c
+```c++
 void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
 {
   if (!pp_.kAutoStart && !start_exploration_)
@@ -153,7 +155,7 @@ void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
   }
 ```
 一些bool flag
-```c
+```c++
   Timer overall_processing_timer("overall processing");
   update_representation_runtime_ = 0;
   local_viewpoint_sampling_runtime_ = 0;
@@ -174,7 +176,7 @@ void SensorCoveragePlanner3D::execute(const ros::TimerEvent&)
   }
 ```
 主要是对waypoint的初始化
-```c
+```c++
 void SensorCoveragePlanner3D::SendInitialWaypoint()
 {
   // lx ly only determine the dir of the start which will update later
@@ -195,7 +197,7 @@ void SensorCoveragePlanner3D::SendInitialWaypoint()
 ```
 
 ```c
-  overall_processing_timer.Start();
+overall_processing_timer.Start();
   if (keypose_cloud_update_)
   {
     keypose_cloud_update_ = false;
@@ -244,8 +246,9 @@ void SensorCoveragePlanner3D::SendInitialWaypoint()
     near_home_ = GetRobotToHomeDistance() < pp_.kRushHomeDist;
     at_home_ = GetRobotToHomeDistance() < pp_.kAtHomeDistThreshold;
 
-    if (pd_.grid_world_->IsReturningHome() && pd_.local_coverage_planner_->IsLocalCoverageComplete() &&
-        (ros::Time::now() - start_time_).toSec() > 5)
+    // to judge the end of exploration : it should satify the three conditions:
+    // the 3rd condition is for the time :at least after 5sec will the robot return to home 
+    if (pd_.grid_world_->IsReturningHome() && pd_.local_coverage_planner_->IsLocalCoverageComplete() && (ros::Time::now() - start_time_).toSec() > 5)
     {
       if (!exploration_finished_)
       {
@@ -254,22 +257,27 @@ void SensorCoveragePlanner3D::SendInitialWaypoint()
       exploration_finished_ = true;
     }
 
+    // to judge the end position whether is neat home and the state of the robot whether is stop
     if (exploration_finished_ && at_home_ && !stopped_)
     {
       PrintExplorationStatus("Return home completed", false);
       stopped_ = true;
     }
 
+    // concatenate the global path to local path
     pd_.exploration_path_ = ConcatenateGlobalLocalPath(global_path, local_path);
 
     PublishExplorationState();
 
+    // 实际上的waypoint是lookahead point而不是path中的位置。真正重要的东西在于其给定的方向
+    //? 从实验的过程就可以看出来waypoint的发布似乎总是选取在边界上的点
     lookahead_point_update_ = GetLookAheadPoint(pd_.exploration_path_, global_path, pd_.lookahead_point_);
     PublishWaypoint();
 
     overall_processing_timer.Stop(false);
     overall_runtime_ = overall_processing_timer.GetDuration("ms");
 
+    //Visualization的部分
     pd_.visualizer_->GetGlobalSubspaceMarker(pd_.grid_world_, global_cell_tsp_order);
     Eigen::Vector3d viewpoint_origin = pd_.viewpoint_manager_->GetOrigin();
     pd_.visualizer_->GetLocalPlanningHorizonMarker(viewpoint_origin.x(), viewpoint_origin.y(), pd_.robot_position_.z);
@@ -281,6 +289,7 @@ void SensorCoveragePlanner3D::SendInitialWaypoint()
   }
 }
 }  // namespace sensor_coverage_planner_3d_ns
+
 
 ```
 
